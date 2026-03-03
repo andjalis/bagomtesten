@@ -17,12 +17,14 @@ IS_RENDER = os.environ.get('RENDER') == 'true'
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 if IS_RENDER:
-    DATA_DIR = Path('/data')
+    # On Render, raw data/history.db lives on the persistent disk mounted at /data
+    PERSISTENT_DIR = Path('/data')
 else:
-    DATA_DIR = BASE_DIR / 'data'
+    PERSISTENT_DIR = BASE_DIR / 'data'
 
-PRECOMPUTED_DIR = DATA_DIR / 'precomputed'
-DB_PATH = str(DATA_DIR / 'history.db')
+# The precomputed JSON files are checked into Git, so they are ALWAYS in the project directory
+PRECOMPUTED_DIR = BASE_DIR / 'data' / 'precomputed'
+DB_PATH = str(PERSISTENT_DIR / 'history.db')
 
 def _load_json(filename: str):
     path = PRECOMPUTED_DIR / filename
@@ -230,7 +232,7 @@ def load_db_stats() -> dict:
 def _find_db() -> str | None:
     """Find the history.db file, checking multiple fallback locations."""
     candidates = [
-        DATA_DIR / 'history.db',
+        PERSISTENT_DIR / 'history.db',
         BASE_DIR / 'history.db',
         Path('history.db'),
     ]
