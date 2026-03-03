@@ -107,7 +107,7 @@ def load_candidates_data() -> pd.DataFrame:
                     raw_party = raw_party[len(name):].strip()
                 
                 rows.append({
-                    "name": name,
+                    "candidate_name": name,
                     "party": raw_party,
                     "answers": c["answers"]
                 })
