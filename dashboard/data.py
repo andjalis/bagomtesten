@@ -29,7 +29,25 @@ def _get_csv_path() -> str:
 def load_csv() -> pd.DataFrame:
     """Load the latest simulation answers from CSV and attach candidate images."""
     try:
-        df = pd.read_csv(_get_csv_path(), low_memory=False)
+        # Heavily optimized for Render's 512MB RAM tier
+        usecols = [
+            "run_id",
+            "municipality",
+            "candidate_rank",
+            "candidate_name",
+            "party",
+            "match_pct"
+        ]
+        dtypes = {
+            "municipality": "category",
+            "candidate_rank": "int8",
+            "candidate_name": "category",
+            "party": "category",
+            "match_pct": "int8"
+        }
+        
+        df = pd.read_csv(_get_csv_path(), usecols=usecols, dtype=dtypes, low_memory=False)
+        
         conn = sqlite3.connect(_get_db_path())
         media_df = pd.read_sql_query("SELECT candidate_name, candidate_image FROM candidate_media", conn)
         conn.close()
