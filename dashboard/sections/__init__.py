@@ -7,7 +7,7 @@ from a single location: `from dashboard.sections import render_party_distributio
 
 from dashboard.sections.party_distribution import render_party_distribution
 from dashboard.sections.gaming_analysis import render_gaming_analysis
-from dashboard.sections.correlation import render_correlation_analysis
+from dashboard.sections.question_impact import render_question_impact
 from dashboard.sections.party_drilldown import render_party_drilldown
 from dashboard.sections.blok_analysis import render_blok_analysis_global
 from dashboard.sections.kommune_analysis import render_kommune_analysis
@@ -20,7 +20,7 @@ from dashboard.sections.party_comparison import render_party_comparison
 __all__ = [
     "render_party_distribution",
     "render_gaming_analysis",
-    "render_correlation_analysis",
+    "render_question_impact",
     "render_party_drilldown",
     "render_blok_analysis_global",
     "render_kommune_analysis",

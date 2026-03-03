@@ -9,18 +9,15 @@ from config import PARTY_COLORS
 from dashboard.sections._plotly_theme import base_layout
 
 
-def render_party_drilldown(df: pd.DataFrame, top1: pd.DataFrame):
-    """Render the party-specific drilldown tab."""
-    from dashboard.data import load_candidates_data, load_questions
-    from dashboard.sections.gaming_analysis import _render_candidate_cards
+from dashboard.data import load_candidates_data, load_questions, load_kommune_stats, load_candidate_gaming
+from dashboard.sections.gaming_analysis import _render_candidate_cards
 
+def render_party_drilldown():
+    """Render the party-specific drilldown tab from precomputed data."""
     st.header("🔍 Dyk ned i et specifikt parti")
     st.caption("Detaljeret profil af ét bestemt parti: geografi, top-kandidater fra testen og partidisciplin.")
 
-    parties = sorted(top1["party"].unique().tolist())
-    if not parties:
-        st.info("Ingen partidata.")
-        return
+    parties = list(PARTY_COLORS.keys())
 
     # Store in session state to maintain selection across reruns if needed
     party = st.selectbox("Vælg Parti for Dybdegående Analyse:", parties, index=parties.index("Alternativet") if "Alternativet" in parties else 0)
@@ -28,47 +25,55 @@ def render_party_drilldown(df: pd.DataFrame, top1: pd.DataFrame):
 
     st.divider()
     
-    st.divider()
-    
     # 1. Top Section - Map
     st.subheader("📍 Geografisk Styrke (Top-1 Pct)")
-    total_runs_per_mun = df[df["candidate_rank"] == 1]["municipality"].value_counts()
-    party_runs_per_mun = top1[top1["party"] == party]["municipality"].value_counts()
-
-    win_rate = (party_runs_per_mun / total_runs_per_mun * 100).fillna(0).reset_index()
-    win_rate.columns = ["Storkreds", "Win_Rate_Pct"]
-    win_rate = win_rate.sort_values("Win_Rate_Pct", ascending=False)
-
-    fig_map = px.bar(
-        win_rate, x="Storkreds", y="Win_Rate_Pct",
-        title=f"Hvor stor en andel af alle nr. 1 anbefalinger går til {party} lokalt?",
-        color_discrete_sequence=[p_color],
-    )
-    fig_map.update_traces(
-        hovertemplate="<b>%{x}</b><br>Ud af alle top-1 resultater her ryddede partiet <b>%{y:.1f}%</b><extra></extra>"
-    )
-    fig_map.update_layout(**base_layout(
-        xaxis=dict(title="", tickangle=-45),
-        yaxis=dict(title="Anbefalet (%)", showgrid=True),
-        margin=dict(l=0, r=0, t=50, b=0),
-    ))
-    st.plotly_chart(fig_map, use_container_width=True)
-
+    
+    k_stats = load_kommune_stats()
+    if not k_stats.empty:
+        # Approximate win rate from precalculated block percentages and top party
+        # Note: real version would have exact party % in JSON if we needed perfect accuracy, 
+        # but for this specific "which municipality does the party shine in" we can infer or 
+        # just show the municipalities where this party won it all.
+        
+        # Let's filter to municipalities where this party is the top winner.
+        party_muns = k_stats[k_stats["Top_Party"] == party]
+        
+        if not party_muns.empty:
+            st.markdown(f"**{party}** er det bedst matchende parti i følgende kommuner:")
+            party_muns = party_muns.copy()
+            party_muns["Dominerende Blok Pct"] = party_muns.apply(lambda r: r["Red_Pct"] if r["Vinder_Blok"] == "Rød Blok" else r["Blue_Pct"], axis=1)
+            party_muns = party_muns.sort_values("Dominerende Blok Pct", ascending=False)
+            
+            fig_map = px.bar(
+                party_muns, x="Kommune", y="Dominerende Blok Pct",
+                title=f"Kommuner vundet af {party} (Farvet efter blok-størrelse)",
+                color_discrete_sequence=[p_color],
+            )
+            fig_map.update_layout(**base_layout(
+                xaxis=dict(title="", tickangle=-45),
+                yaxis=dict(title="Top Blok (%)", showgrid=True),
+                margin=dict(l=0, r=0, t=50, b=0),
+            ))
+            st.plotly_chart(fig_map, use_container_width=True)
+        else:
+            st.info(f"{party} var ikke det mest anbefalede parti i nogen kommune samlet set.")
+    
     st.divider()
     
     # 2. Top-5 Candidates
     st.subheader(f"🥇 Mest Anbefalede Kandidater i {party}")
     st.caption("Disse kandidater tonede oftest frem på skærmen som absolut top-match for testtagerne.")
     
-    party_top1 = top1[top1["party"] == party]
-    party_df = df[df["party"] == party]
+    top_candidates, _ = load_candidate_gaming()
     
-    if not party_top1.empty:
-        # We reuse the candidate card renderer, but it sorts all inside. 
-        # So we just pass the filtered data.
-        _render_candidate_cards(party_df, party_top1)
+    if not top_candidates.empty:
+        party_top = top_candidates[top_candidates["party"] == party]
+        if not party_top.empty:
+            _render_candidate_cards(party_top, key_prefix="drilldown")
+        else:
+            st.info("Ingen kandidater at vise for dette parti i top-listerne.")
     else:
-        st.info("Ingen 'nr. 1' anbefalinger for partiet at vise kandidater ud fra.")
+        st.info("Data mangler.")
 
     st.divider()
 

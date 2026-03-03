@@ -8,15 +8,21 @@ from config import PARTY_COLORS
 from dashboard.sections._plotly_theme import base_layout
 
 
-def render_party_distribution(top1: pd.DataFrame):
-    """Render bar chart + donut chart of top-1 party distribution."""
+from dashboard.data import load_party_rankings
+
+def render_party_distribution():
+    """Render bar chart + donut chart of top-1 party distribution from precomputed JSON."""
     st.subheader("📊 Fordeling af anbefalede partier")
     st.caption("Testens top-1 anbefalinger bygget på samtlige simuleringer.")
 
     col_left, col_right = st.columns([3, 2], gap="large")
 
-    party_counts = top1["party"].value_counts().reset_index()
-    party_counts.columns = ["Parti", "Antal"]
+    party_counts = load_party_rankings()
+    if party_counts.empty:
+        st.warning("Data mangler. Kør bygge-scriptet.")
+        return
+        
+    party_counts.rename(columns={"Party": "Parti", "Count": "Antal"}, inplace=True)
 
     with col_left:
         fig_party = px.bar(

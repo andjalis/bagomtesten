@@ -1,5 +1,7 @@
 """
 dashboard.data — Data loading and caching layer for the dashboard.
+Refactored to serve pre-computed lightweight JSON files instead of 
+parsing massive CSVs on-the-fly, to ensure safe memory footprints.
 """
 
 import json
@@ -7,95 +9,95 @@ import sqlite3
 import time
 import os
 from pathlib import Path
-
 import pandas as pd
 import streamlit as st
 
 # Environment detection for Render.com Persistent Disk
 IS_RENDER = os.environ.get('RENDER') == 'true'
-DATA_DIR = '/data' if IS_RENDER else '.'
-DB_PATH = os.path.join(DATA_DIR, 'history.db')
-CSV_PATH = os.path.join(DATA_DIR, 'results.csv')
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-def _get_db_path() -> str:
-    # Use /data/history.db if it exists, else fallback to local
-    return DB_PATH if os.path.exists(DB_PATH) else 'history.db'
+if IS_RENDER:
+    DATA_DIR = Path('/data')
+else:
+    DATA_DIR = BASE_DIR / 'data'
 
-def _get_csv_path() -> str:
-    return CSV_PATH if os.path.exists(CSV_PATH) else 'results.csv'
+PRECOMPUTED_DIR = DATA_DIR / 'precomputed'
+DB_PATH = str(DATA_DIR / 'history.db')
 
+def _load_json(filename: str):
+    path = PRECOMPUTED_DIR / filename
+    if not path.exists():
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-@st.cache_data(show_spinner=False, ttl=3600)
-def load_csv() -> pd.DataFrame:
-    """Load the latest simulation answers from CSV and attach candidate images."""
-    try:
-        # Heavily optimized for Render's 512MB RAM tier
-        usecols = [
-            "run_id",
-            "municipality",
-            "candidate_rank",
-            "candidate_name",
-            "party",
-            "match_pct"
-        ]
-        dtypes = {
-            "municipality": "category",
-            "candidate_rank": "int8",
-            "candidate_name": "category",
-            "party": "category",
-            "match_pct": "int8"
-        }
-        
-        # Severely limit rows on Render to prevent OOM
-        nrows = 1_000_000 if IS_RENDER else None
-        
-        df = pd.read_csv(_get_csv_path(), usecols=usecols, dtype=dtypes, nrows=nrows, low_memory=False)
-        
-        conn = sqlite3.connect(_get_db_path())
-        media_df = pd.read_sql_query("SELECT candidate_name, candidate_image FROM candidate_media", conn)
-        conn.close()
-        
-        # Merge if media was found
-        if not media_df.empty:
-            media_df = media_df.drop_duplicates(subset=["candidate_name"])
-            df = df.merge(media_df, on="candidate_name", how="left")
-            
-        if 'candidate_image' not in df.columns:
-            df['candidate_image'] = ""
-            
-        df['candidate_image'] = df['candidate_image'].fillna("")
-        return df
-    except Exception as e:
-        print(f"Error loading CSV: {e}")
-        return pd.DataFrame()
-
+# ──  Precomputed Data Getters ────────────────────────────────────────────────
 
 @st.cache_data(show_spinner=False, ttl=3600)
-def load_simulation_meta() -> dict:
-    """Load metadata for the simulation hero banner."""
-    try:
-        conn = sqlite3.connect(_get_db_path())
-        df = pd.read_sql_query("SELECT COUNT(DISTINCT municipality) as storkredse, COUNT(DISTINCT answer_hash) as user_variants FROM runs WHERE status='done'", conn)
-        conn.close()
-        
-        storkredse = int(df['storkredse'].iloc[0]) if not df.empty else 10
-        user_variants = int(df['user_variants'].iloc[0]) if not df.empty else 100000
-        
-        return {
-            "storkredse": storkredse,
-            "total_candidates": 714, # known from LHS
-        }
-    except Exception as e:
-        print(f"Error loading simulation meta: {e}")
-        return {"storkredse": 10, "total_candidates": 714}
+def load_global_kpis() -> dict:
+    """Load lightweight summary KPIs (storkredse, bias_index, etc.)."""
+    data = _load_json("global_kpis.json")
+    if not data:
+        # Fallback values if compiler hasn't run
+        return {"storkredse": 10, "total_candidates": 714, "total_simulations": 0, "bias_index": 0}
+    return data
 
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_party_rankings() -> pd.DataFrame:
+    """Load pre-aggregated top-1 party frequencies."""
+    path = PRECOMPUTED_DIR / "party_rankings.json"
+    if not path.exists(): return pd.DataFrame()
+    return pd.read_json(path, orient="records")
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_party_match_distributions() -> pd.DataFrame:
+    """Load a stratified sample of match percentages for violin plots."""
+    path = PRECOMPUTED_DIR / "party_match_distributions.json"
+    if not path.exists(): return pd.DataFrame()
+    return pd.read_json(path, orient="records")
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_party_pairs() -> pd.DataFrame:
+    """Load pre-aggregated matrix of Rank 1 vs Rank 2 party combinations."""
+    path = PRECOMPUTED_DIR / "party_pairs.json"
+    if not path.exists(): return pd.DataFrame()
+    return pd.read_json(path, orient="records")
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_question_impact() -> pd.DataFrame:
+    """Load pre-calculated effect sizes of each question on top_match_pct."""
+    path = PRECOMPUTED_DIR / "question_impact.json"
+    if not path.exists(): return pd.DataFrame()
+    return pd.read_json(path, orient="records")
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_candidate_gaming() -> tuple:
+    """Load stats for the most recommended candidates and their rank distribution."""
+    data = _load_json("candidate_gaming.json")
+    if not data: return pd.DataFrame(), pd.DataFrame()
+    return pd.DataFrame(data["top_candidates"]), pd.DataFrame(data["rank_breakdown"])
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_kommune_stats() -> pd.DataFrame:
+    """Load geographical red/blue block distribution."""
+    path = PRECOMPUTED_DIR / "kommune_stats.json"
+    if not path.exists(): return pd.DataFrame()
+    return pd.read_json(path, orient="records")
+
+
+# ── Legacy Functions (Still used, optimized) ─────────────────────────────────
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def load_candidates_data() -> pd.DataFrame:
     """Load the pre-scraped candidates and their 25 answers into a DataFrame.
+    Expands the answers list into Q1-Q25 columns for variance analysis.
     Used for intra-party alignment analysis (Partisoldat vs Oprører)."""
     try:
-        with open("all_candidates.json", "r", encoding="utf-8") as f:
+        path = BASE_DIR / "all_candidates.json"
+        if not path.exists():
+            return pd.DataFrame()
+            
+        with open(path, "r", encoding="utf-8") as f:
             candidates = json.load(f)
             
         rows = []
@@ -106,27 +108,80 @@ def load_candidates_data() -> pd.DataFrame:
                 if raw_party.startswith(name):
                     raw_party = raw_party[len(name):].strip()
                 
-                rows.append({
+                row = {
                     "candidate_name": name,
                     "party": raw_party,
-                    "answers": c["answers"]
-                })
+                    "municipality": c.get("municipality", c.get("storkreds", "Ukendt")),
+                    "candidate_image": c.get("image", ""),
+                }
+                # Expand answers into Q1..Q25
+                for i, ans in enumerate(c["answers"]):
+                    row[f"Q{i+1}"] = ans
+                rows.append(row)
         return pd.DataFrame(rows)
     except Exception as e:
         print(f"Error loading candidates: {e}")
         return pd.DataFrame()
 
 
-@st.cache_data(show_spinner=False, ttl=60)
-def load_db_top1() -> pd.DataFrame:
-    """Load rank-1 results directly from the history database for correlation analysis."""
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_questions() -> dict:
+    """Load question texts from the database."""
     try:
-        conn = sqlite3.connect(_get_db_path())
-        df = pd.read_sql_query("SELECT run_id, party, match_pct FROM results WHERE rank=1", conn)
+        db = _find_db()
+        if not db:
+            return {}
+        conn = sqlite3.connect(db)
+        cursor = conn.cursor()
+        cursor.execute("SELECT question_number, question_text FROM questions")
+        results = cursor.fetchall()
+        conn.close()
+        
+        return {row[0]: row[1] for row in results}
+    except Exception as e:
+        print(f"Error loading questions: {e}")
+        return {}
+
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_run_answers() -> pd.DataFrame:
+    """Load user answer data from the scraped history database.
+    Returns a DataFrame with run_id, Q1..Q25 columns.
+    This is lightweight (~10K rows from SQLite)."""
+    try:
+        db = _find_db()
+        if not db:
+            return pd.DataFrame()
+        conn = sqlite3.connect(db)
+        df = pd.read_sql_query(
+            "SELECT run_id, " + ", ".join(f"Q{i+1}" for i in range(25)) + " FROM run_answers",
+            conn,
+        )
         conn.close()
         return df
     except Exception as e:
-        print(f"Error loading top1 from DB: {e}")
+        print(f"Error loading run answers: {e}")
+        return pd.DataFrame()
+
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def load_db_top1() -> pd.DataFrame:
+    """Load top-1 match results from the scraped history database.
+    Returns a DataFrame with run_id, candidate_name, party, match_pct.
+    This is lightweight (~10K rows from SQLite)."""
+    try:
+        db = _find_db()
+        if not db:
+            return pd.DataFrame()
+        conn = sqlite3.connect(db)
+        df = pd.read_sql_query(
+            "SELECT run_id, candidate_name, party, match_pct FROM results WHERE rank = 1",
+            conn,
+        )
+        conn.close()
+        return df
+    except Exception as e:
+        print(f"Error loading db top1: {e}")
         return pd.DataFrame()
 
 
@@ -134,7 +189,10 @@ def load_db_top1() -> pd.DataFrame:
 def load_db_stats() -> dict:
     """Load scraper run statistics from SQLite."""
     try:
-        conn = sqlite3.connect(_get_db_path())
+        db = _find_db()
+        if not db:
+            return {"total": 0, "done": 0, "failed": 0, "failed_recent": 0, "running": 0, "speed_per_hour": 0}
+        conn = sqlite3.connect(db)
         cursor = conn.cursor()
         
         cursor.execute("SELECT COUNT(*) FROM runs")
@@ -169,40 +227,15 @@ def load_db_stats() -> dict:
         return {"total": 0, "done": 0, "failed": 0, "failed_recent": 0, "running": 0, "speed_per_hour": 0}
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
-def load_run_answers() -> pd.DataFrame:
-    """Load answer vectors for all completed runs.
-    Parses the JSON answer arrays stored in runs.answers_json into
-    25 separate columns (Q1-Q25) for correlation and pattern analysis."""
-    try:
-        conn = sqlite3.connect(_get_db_path())
-        df = pd.read_sql_query("SELECT id, answers_json, status FROM runs WHERE status='done'", conn)
-        conn.close()
-        
-        if df.empty:
-            return pd.DataFrame()
-            
-        answers_list = df['answers_json'].apply(json.loads).tolist()
-        answers_df = pd.DataFrame(answers_list, columns=[f"Q{i+1}" for i in range(1, 26)])
-        answers_df['run_id'] = df['id']
-        return answers_df
-    except Exception as e:
-        print(f"Error loading run answers: {e}")
-        return pd.DataFrame()
+def _find_db() -> str | None:
+    """Find the history.db file, checking multiple fallback locations."""
+    candidates = [
+        DATA_DIR / 'history.db',
+        BASE_DIR / 'history.db',
+        Path('history.db'),
+    ]
+    for p in candidates:
+        if p.exists():
+            return str(p)
+    return None
 
-
-@st.cache_data(show_spinner=False, ttl=3600)
-def load_questions() -> dict:
-    """Load question texts from the database.
-    Returns: Dict mapping question_number (int) -> question_text (str)."""
-    try:
-        conn = sqlite3.connect(_get_db_path())
-        cursor = conn.cursor()
-        cursor.execute("SELECT question_number, question_text FROM questions")
-        results = cursor.fetchall()
-        conn.close()
-        
-        return {row[0]: row[1] for row in results}
-    except Exception as e:
-        print(f"Error loading questions: {e}")
-        return {}

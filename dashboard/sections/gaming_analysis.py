@@ -8,7 +8,9 @@ from config import PARTY_COLORS, ANSWER_LABELS, ANSWER_COLORS
 from dashboard.sections._plotly_theme import base_layout, RANK_COLORS
 
 
-def render_gaming_analysis(df: pd.DataFrame, top1: pd.DataFrame):
+from dashboard.data import load_candidates_data, load_questions, load_candidate_gaming
+
+def render_gaming_analysis():
     """Render the 'Who games the test?' section with candidate cards and rank chart."""
     st.subheader("🚨 Hvem 'gamer' testen?")
     st.markdown(
@@ -17,19 +19,22 @@ def render_gaming_analysis(df: pd.DataFrame, top1: pd.DataFrame):
         "sammenlignet med det gennemsnitlige forventede udfald ved tilfældige svar."
     )
 
+    top_candidates, rank_breakdown = load_candidate_gaming()
+    if top_candidates.empty or rank_breakdown.empty:
+        st.warning("Data mangler. Kør bygge-scriptet.")
+        return
+
     col_left, col_right = st.columns([2, 3])
 
     with col_left:
-        _render_candidate_cards(df, top1)
+        _render_candidate_cards(top_candidates)
 
     with col_right:
-        _render_rank_chart(df)
+        _render_rank_chart(rank_breakdown)
 
 
-def _render_candidate_cards(df: pd.DataFrame, top1: pd.DataFrame):
-    """Render sortable candidate cards in the left column."""
-    from dashboard.data import load_candidates_data, load_questions
-
+def _render_candidate_cards(top_candidates: pd.DataFrame, key_prefix: str = "gaming"):
+    """Render sortable candidate cards in the left column from precomputed data."""
     st.markdown("**Testens mest anbefalede kandidater**")
 
     sort_method = st.selectbox(
@@ -37,29 +42,20 @@ def _render_candidate_cards(df: pd.DataFrame, top1: pd.DataFrame):
         ["Oftest anbefalet som 1. valg", "Flest visninger totalt i resultaterne"],
         index=0,
         label_visibility="collapsed",
-        key=f"sort_cand_{id(top1)}",
+        key=f"{key_prefix}_sort_candidates",
     )
-
-    top1_stats = (
-        top1.groupby(["candidate_name", "party", "candidate_image"])
-        .agg(count=("run_id", "count"), municipality=("municipality", "first"))
-        .reset_index()
-    )
-
-    total_appearances = df.groupby("candidate_name").size().reset_index(name="total_count")
-    top1_stats = pd.merge(top1_stats, total_appearances, on="candidate_name", how="left")
 
     sort_map = {
         "Oftest anbefalet som 1. valg": (["count"], [False]),
         "Flest visninger totalt i resultaterne": (["total_count", "count"], [False, False]),
     }
     cols, asc = sort_map[sort_method]
-    top_candidates = top1_stats.sort_values(cols, ascending=asc).head(8)
+    display_candidates = top_candidates.sort_values(cols, ascending=asc).head(8)
 
     c_df = load_candidates_data()
     q_dict = load_questions()
 
-    for _, row in top_candidates.iterrows():
+    for _, row in display_candidates.iterrows():
         p_color = PARTY_COLORS.get(row["party"], "#374151")
         img_src = (
             row["candidate_image"]
@@ -111,20 +107,17 @@ def _render_candidate_cards(df: pd.DataFrame, top1: pd.DataFrame):
                         """, unsafe_allow_html=True)
 
 
-def _render_rank_chart(df: pd.DataFrame):
-    """Render the stacked bar chart showing candidate placement distribution."""
+def _render_rank_chart(rank_breakdown: pd.DataFrame):
+    """Render the stacked bar chart showing candidate placement distribution from precomputed data."""
     st.markdown("**Placering for top 15 kandidater (nr. 1 til nr. 6)**")
 
-    top15_names = df["candidate_name"].value_counts().head(15).index.tolist()
-    df_top15 = df[df["candidate_name"].isin(top15_names)]
-
-    rank_breakdown = (
-        df_top15.groupby(["candidate_name", "party", "candidate_rank"])
-        .size().reset_index(name="Antal")
-    )
-
-    total_freq = df_top15.groupby("candidate_name").size().to_dict()
+    total_freq = rank_breakdown.groupby("candidate_name")["Antal"].sum().to_dict()
     rank_breakdown["Total"] = rank_breakdown["candidate_name"].map(total_freq)
+    
+    # Only show top 15 in the chart
+    top15_names = pd.Series(total_freq).sort_values(ascending=False).head(15).index.tolist()
+    rank_breakdown = rank_breakdown[rank_breakdown["candidate_name"].isin(top15_names)]
+    
     rank_breakdown = rank_breakdown.sort_values(["Total", "candidate_name"], ascending=[False, True])
     rank_breakdown["Placering"] = rank_breakdown["candidate_rank"].apply(lambda x: f"Nr. {int(x)}")
 

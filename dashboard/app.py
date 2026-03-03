@@ -26,11 +26,11 @@ import streamlit as st
 
 from config import REFRESH_INTERVAL, normalize_parties_df
 from dashboard.css import DASHBOARD_CSS
-from dashboard.data import load_csv, load_simulation_meta
+from dashboard.data import load_global_kpis
 from dashboard.sections import (
     render_party_distribution,
     render_gaming_analysis,
-    render_correlation_analysis,
+    render_question_impact,
     render_party_drilldown,
     render_data_foundation,
     render_kommune_analysis,
@@ -51,45 +51,32 @@ st.set_page_config(
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown(DASHBOARD_CSS, unsafe_allow_html=True)
 
-# ── Header ────────────────────────────────────────────────────────────────────
-sim_meta = load_simulation_meta()
-n_storkredse = sim_meta.get("storkredse", 0)
-n_candidates = sim_meta.get("total_candidates", 0)
-
-st.markdown(f"""
-<div class="main-header">
-    <h1>Kandidattest: Bias & Algoritme</h1>
-    <p>LHS-simulering af {n_storkredse} storkredse • {n_candidates} kandidater med svar • FV26</p>
-</div>
-""", unsafe_allow_html=True)
-
 # ── Load Data ─────────────────────────────────────────────────────────────────
-df = load_csv()
+kpis = load_global_kpis()
 
-if df is None or df.empty:
+if not kpis or kpis.get("total_simulations", 0) == 0:
     st.divider()
     st.info(
-        "🔄 Ingen simulationsdata fundet. Kør simulationen med `python simulate_lhs.py` for at generere data.",
+        "🔄 Ingen simulationsdata fundet. Kør data-compilen med `python tools/build_dashboard_data.py` for at generere JSON-views.",
         icon="📊",
     )
     time.sleep(REFRESH_INTERVAL)
     st.rerun()
 
 else:
-    # Normalize party names
-    df = normalize_parties_df(df)
+    # ── Header ────────────────────────────────────────────────────────────────────
+    n_storkredse = kpis.get("storkredse", 0)
+    n_candidates = kpis.get("total_candidates", 0)
 
-    # Ensure backwards compat
-    if "candidate_image" not in df.columns:
-        df["candidate_image"] = ""
-    else:
-        df["candidate_image"] = df["candidate_image"].fillna("")
+    st.markdown(f"""
+    <div class="main-header">
+        <h1>Kandidattest: Bias & Algoritme</h1>
+        <p>LHS-simulering af {n_storkredse} storkredse • {n_candidates} kandidater med svar • FV26</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # ── Top-1 slice (used by multiple sections) ──
-    top1 = df[df["candidate_rank"] == 1].copy()
-    
     # ── Metric KPI Hero (Above Tabs) ──
-    render_kpi_hero(df, top1)
+    render_kpi_hero(kpis)
     st.divider()
 
     # ── Render Sections (Tabs) ────────────────────────────────────────────────
@@ -98,29 +85,29 @@ else:
     )
 
     with tab_global:
-        render_party_distribution(top1)
+        render_party_distribution()
         st.divider()
 
-        render_gaming_analysis(df, top1)
+        render_gaming_analysis()
         st.divider()
 
-        render_party_pairs(df)
+        render_party_pairs()
         st.divider()
 
-        render_correlation_analysis()
+        render_question_impact()
         st.divider()
 
-        render_blok_analysis_global(top1)
+        render_blok_analysis_global()
         st.divider()
 
     with tab_party:
-        render_party_drilldown(df, top1)
+        render_party_drilldown()
         
     with tab_compare:
-        render_party_comparison(df, top1)
+        render_party_comparison()
 
     with tab_kommune:
-        render_kommune_analysis(df, top1)
+        render_kommune_analysis()
 
     with tab_method:
         render_data_foundation()

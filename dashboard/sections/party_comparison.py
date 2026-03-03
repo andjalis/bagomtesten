@@ -8,14 +8,19 @@ from config import PARTY_COLORS
 from dashboard.sections._plotly_theme import base_layout
 
 
-def render_party_comparison(df: pd.DataFrame, top1: pd.DataFrame):
-    """Render interactive side-by-side comparison of two selected parties."""
-    from dashboard.data import load_candidates_data, load_questions
+from dashboard.data import load_candidates_data, load_questions, load_party_rankings
 
+def render_party_comparison():
+    """Render interactive side-by-side comparison of two selected parties from precomputed data."""
     st.header("⚖️ Sammenlign partier")
     st.caption("Vælg to partier for at sammenligne deres fordeling, match-procenter og svarprofiler side om side.")
 
-    parties = sorted(top1["party"].unique().tolist())
+    party_rankings = load_party_rankings()
+    if party_rankings.empty:
+        st.warning("Data mangler. Kør bygge-scriptet.")
+        return
+
+    parties = sorted(party_rankings["Party"].unique().tolist())
     if len(parties) < 2:
         st.info("Ikke nok partidata til at foretage en sammenligning.")
         return
@@ -35,16 +40,17 @@ def render_party_comparison(df: pd.DataFrame, top1: pd.DataFrame):
 
     st.divider()
 
-    st.divider()
-
     # -- 1. Nøgletal --
     st.subheader("📊 Nøgletal")
     
+    count1 = party_rankings[party_rankings["Party"] == p1]["Count"].iloc[0] if not party_rankings[party_rankings["Party"] == p1].empty else 0
+    count2 = party_rankings[party_rankings["Party"] == p2]["Count"].iloc[0] if not party_rankings[party_rankings["Party"] == p2].empty else 0
+    
     col_stat1, col_stat2 = st.columns(2)
     with col_stat1:
-        st.metric(f"{p1} - Top-1 visninger", f"{len(top1[top1['party'] == p1]):,}".replace(",", "."))
+        st.metric(f"{p1} - Top-1 visninger", f"{count1:,}".replace(",", "."))
     with col_stat2:
-        st.metric(f"{p2} - Top-1 visninger", f"{len(top1[top1['party'] == p2]):,}".replace(",", "."))
+        st.metric(f"{p2} - Top-1 visninger", f"{count2:,}".replace(",", "."))
 
     st.divider()
 

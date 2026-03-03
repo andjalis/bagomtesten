@@ -8,7 +8,9 @@ from config import PARTY_COLORS
 from dashboard.sections._plotly_theme import base_layout
 
 
-def render_party_pairs(df: pd.DataFrame):
+from dashboard.data import load_party_pairs
+
+def render_party_pairs():
     """Render heatmap of party co-occurrence: when party X is #1, who's #2?"""
     st.subheader("🤝 Parti-par analyse")
     st.caption(
@@ -16,27 +18,21 @@ def render_party_pairs(df: pd.DataFrame):
         "Afslører naturlige parti-klynger i testens algoritme."
     )
 
-    # Get rank 1 and rank 2 per run
-    rank1 = df[df["candidate_rank"] == 1][["run_id", "party"]].rename(columns={"party": "Nr1"})
-    rank2 = df[df["candidate_rank"] == 2][["run_id", "party"]].rename(columns={"party": "Nr2"})
-
-    pairs = rank1.merge(rank2, on="run_id", how="inner")
-    if pairs.empty:
-        st.info("Utilstrækkelig data til parti-par analyse.")
+    pairs_df = load_party_pairs()
+    if pairs_df.empty:
+        st.warning("Data mangler. Kør bygge-scriptet.")
         return
 
-    # Build co-occurrence matrix (row = Nr1, col = Nr2, value = count)
+    # Pivot into matrix (row = Rank1_Party, col = Rank2_Party, value = Percentage)
+    cross_pct = pairs_df.pivot(index="Rank1_Party", columns="Rank2_Party", values="Percentage").fillna(0)
     all_parties = sorted(list(PARTY_COLORS.keys()))
-    cross = pd.crosstab(pairs["Nr1"], pairs["Nr2"])
-
-    # Normalize per row (percentage of times Nr2 appears when Nr1 is first)
-    cross_pct = cross.div(cross.sum(axis=1), axis=0) * 100
-
-    # Reindex to include all parties
-    cross_pct = cross_pct.reindex(index=all_parties, columns=all_parties, fill_value=0)
-
-    # Remove self-pairs (diagonal) — a party can't be both #1 and #2
-    # (they can be if different candidates from same party, but let's keep it)
+    
+    # Ensure all parties are present in index and columns
+    for p in all_parties:
+        if p not in cross_pct.index: cross_pct.loc[p] = 0
+        if p not in cross_pct.columns: cross_pct[p] = 0
+            
+    cross_pct = cross_pct.loc[all_parties, all_parties]
 
     fig = go.Figure(data=go.Heatmap(
         z=cross_pct.values,
