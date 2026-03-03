@@ -75,13 +75,9 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Metric KPI Hero (Above Tabs) ──
-    render_kpi_hero(kpis)
-    st.divider()
-
     # ── Render Sections (Tabs) ────────────────────────────────────────────────
     tab_global, tab_party, tab_compare, tab_kommune, tab_method = st.tabs(
-        ["🌍 Global Analyse", "🔍 Parti-Drilldown", "⚖️ Sammenlign Partier", "📍 Lokalt Nedslag", "⚙️ Metode & Data"]
+        ["🌍 Global Analyse", "🔍 Parti-Drilldown", "⚖️ Sammenlign Partier", "📍 Lokalt Nedslag", "⚙️ Metode & data"]
     )
 
     with tab_global:

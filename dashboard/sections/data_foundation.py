@@ -11,9 +11,13 @@ from dashboard.sections._plotly_theme import base_layout
 
 def render_data_foundation():
     """Render the methodology tab explaining the data generation and showing distributions."""
-    from dashboard.data import load_run_answers, load_db_top1, load_questions
+    from dashboard.data import load_run_answers, load_db_top1, load_questions, load_global_kpis
 
-    st.header("⚙️ Metode & datagrundlag")
+    st.header("⚙️ Metode & data")
+    
+    kpis = load_global_kpis()
+    if kpis:
+        st.caption(f"LHS-simulering baseret på **{kpis.get('total_simulations', 0):,}** fuldførte test-kørsler.".replace(",", "."))
 
     col1, col2 = st.columns(2, gap="large")
 
