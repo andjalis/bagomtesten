@@ -1,0 +1,6 @@
+playwright
+streamlit
+pandas
+plotly
+scipy
+aiosqlite
