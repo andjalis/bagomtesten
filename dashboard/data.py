@@ -46,7 +46,10 @@ def load_csv() -> pd.DataFrame:
             "match_pct": "int8"
         }
         
-        df = pd.read_csv(_get_csv_path(), usecols=usecols, dtype=dtypes, low_memory=False)
+        # Severely limit rows on Render to prevent OOM
+        nrows = 1_000_000 if IS_RENDER else None
+        
+        df = pd.read_csv(_get_csv_path(), usecols=usecols, dtype=dtypes, nrows=nrows, low_memory=False)
         
         conn = sqlite3.connect(_get_db_path())
         media_df = pd.read_sql_query("SELECT candidate_name, candidate_image FROM candidate_media", conn)
