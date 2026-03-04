@@ -39,7 +39,7 @@ def render_kommune_analysis():
     muni_row = muni_row.iloc[0]
 
     # Stats cards
-    num_sims = muni_row.get("Total_Sims", 0)
+    num_sims = muni_row.get("Total_Tests", 0)
     most_rec_party = muni_row.get("Top_Party", "N/A")
     top_block = muni_row.get("Vinder_Blok", "N/A")
 

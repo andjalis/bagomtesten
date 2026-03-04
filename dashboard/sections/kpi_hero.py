@@ -15,12 +15,14 @@ def render_kpi_hero(kpis: dict):
     n_candidates = kpis.get("total_candidates", 714)
     bias_index = kpis.get("bias_index", 0)
     over_rep_party = kpis.get("top_party", "N/A")
-    over_rep_delta = round(kpis.get("top_party_overrep", 1) * 10 - 10, 1) # rough approx delta
-    expected_pct = 100.0 / 11.0 # 11 parties
+    k_parties = kpis.get("k_parties", 12)
+    expected_pct = 100.0 / k_parties
+    actual_pct = kpis.get("top_party_pct", 0)
+    over_rep_delta = round(actual_pct - expected_pct, 1)
     
     top_cand_name = kpis.get("top_candidate", "N/A")
-    top_cand_count = kpis.get("top_party_count", 0) # We might need top cand count specifically, but this works for now
-    top_cand_party = "Ukendt" # We can refine this later if needed
+    top_cand_count = kpis.get("top_candidate_count", 0)
+    top_cand_party = kpis.get("top_candidate_party", "Ukendt")
 
     # ── Bias severity label ──
     if bias_index < 15:
@@ -54,12 +56,16 @@ def render_kpi_hero(kpis: dict):
 
     logo_style = "display: inline-flex; align-items: center; justify-content: center; width: 1.2em; height: 1.2em; border-radius: 50%; color: white; font-weight: bold; font-size: 0.85em; margin-right: 6px; position: relative; top: -2px;"
 
+    # Format numbers with dots as thousand separator (Danish convention)
+    def _dk(n):
+        return f"{n:,}".replace(",", ".")
+
     st.markdown(f"""
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-label">Simulerede tests</div>
-            <div class="kpi-value">{total_sims:,}</div>
-            <div class="kpi-sub">11 partier • {n_candidates} kandidater</div>
+            <div class="kpi-value">{_dk(total_sims)}</div>
+            <div class="kpi-sub">{k_parties} partier • {n_candidates} kandidater</div>
         </div>
         <div class="kpi-card kpi-accent">
             <div class="kpi-label">Bias index</div>
@@ -80,23 +86,23 @@ def render_kpi_hero(kpis: dict):
             <div class="kpi-label">Algoritmens favorit</div>
             <div class="kpi-value kpi-party" style="color: {top_cand_color};">{top_cand_name}</div>
             <div class="kpi-sub" style="display: flex; align-items: center; margin-top: 4px;">
-                {top_cand_count:,} førsteplaceringer • 
+                {_dk(top_cand_count)} førsteplaceringer • 
                 <span style="{logo_style} background-color: {top_cand_color}; margin-left: 6px;">{top_cand_letter}</span>
                 {top_cand_party}
             </div>
         </div>
     </div>
-    """.replace(",", "."), unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
     with st.expander("ℹ️ Hvad betyder Bias Index?"):
         st.markdown(f"""
         **Bias Index** er et mål for, hvor skævt testens algoritme fordeler sine top-anbefalinger sammenlignet med en fuldstændig fair fordeling.
         
         Vi beregner det ved hjælp af en statistisk metode kaldet *Chi-i-anden (χ²)*:
-        1. **Forventet fordeling:** Hvis testen var 100% neutral, ville hvert af de 11 partier få præcis {expected_pct:.1f}% af førstepladserne.
-        2. **Faktisk fordeling:** Vi kigger på, hvor mange førstepladser hvert parti *rent faktisk* har fået i de {total_sims:,} simuleringer.
+        1. **Forventet fordeling:** Hvis testen var 100% neutral, ville hvert af de {k_parties} partier få præcis {expected_pct:.1f}% af førstepladserne.
+        2. **Faktisk fordeling:** Vi kigger på, hvor mange førstepladser hvert parti *rent faktisk* har fået i de {_dk(total_sims)} simuleringer.
         3. **Afvigelse (Chi-Square):** Vi summerer forskellene mellem det forventede og det faktiske for alle partier.
         4. **Index (0-100):** For nemheds skyld omregner vi resultatet til en skala fra 0 til 100, hvor 0 betyder "perfekt balance" og 100 betyder "ekstrem skævvridning" (f.eks. hvis ét parti fik alle top-anbefalinger).
         
         Kort sagt: **Jo højere Bias Index, jo mere systematisk fordel har et snævert udsnit af partier i testen.**
-        """.replace(",", "."), unsafe_allow_html=True)
+        """, unsafe_allow_html=True)

@@ -40,7 +40,7 @@ def main():
         "candidate_rank": "int8",
         "candidate_name": "category",
         "party": "category",
-        "match_pct": "int8"
+        "match_pct": "int16"
     }
     df = pd.read_csv(CSV_PATH, usecols=usecols, dtype=dtypes, low_memory=False)
     
@@ -92,17 +92,28 @@ def main():
 
     cand_counts = top1['candidate_name'].value_counts()
     top_cand = cand_counts.index[0] if len(cand_counts) > 0 else "N/A"
+    top_cand_count = int(cand_counts.iloc[0]) if len(cand_counts) > 0 else 0
+
+    # Find the party of the top candidate
+    top_cand_party = "Ukendt"
+    if top_cand != "N/A":
+        cand_party_match = top1[top1['candidate_name'] == top_cand]['party']
+        if not cand_party_match.empty:
+            top_cand_party = str(cand_party_match.iloc[0])
 
     kpis = {
         "storkredse": storkredse,
         "total_candidates": 714,
         "total_simulations": n_total,
+        "k_parties": k_parties,
         "bias_index": bias_index,
         "top_party": top_party,
         "top_party_count": top_party_count,
         "top_party_pct": top_party_pct,
         "top_party_overrep": float(top_party_overrep),
-        "top_candidate": top_cand
+        "top_candidate": top_cand,
+        "top_candidate_count": top_cand_count,
+        "top_candidate_party": top_cand_party,
     }
     with open(OUT_DIR / "global_kpis.json", "w", encoding="utf-8") as f:
         json.dump(kpis, f, ensure_ascii=False)
@@ -196,7 +207,7 @@ def main():
         
         if not runs_df.empty:
             answers_list = runs_df['answers_json'].apply(json.loads).tolist()
-            q_df = pd.DataFrame(answers_list, columns=[f"Q{i+1}" for i in range(1, 26)])
+            q_df = pd.DataFrame(answers_list, columns=[f"Q{i+1}" for i in range(25)])
             q_df['match_pct'] = runs_df['match_pct']
             
             impact_data = []
