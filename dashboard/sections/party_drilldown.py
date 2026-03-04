@@ -216,3 +216,56 @@ def render_party_drilldown():
 
     with col4:
         render_persona(oprorer, "Oprøreren", "persona-oprorer", "Største afviger")
+
+    st.divider()
+
+    # -- 5. Fiktiv Besvarelsesoversigt (Partiets Samlede Svar) --
+    st.subheader(f"📋 Fiktiv profil: Hvad svarer {party} samlet set?")
+    st.caption("Hvis partiet var én samlet kandidat, baseret på gennemsnittet af alle deres kandidaters svar, ville profilen se sådan ud:")
+
+    from config import ANSWER_LABELS
+
+    # Create summary records
+    summary_records = []
+    party_means = mean_vec.copy() 
+    
+    # Sort questions 1-25 
+    for i in range(1, 26):
+        q_col = f"Q{i}"
+        val = party_means[q_col]
+        
+        # Round to nearest valid answer (0, 1, 2, 3)
+        rounded_val = int(round(val))
+        
+        ans_text = ANSWER_LABELS.get(rounded_val, "Ukendt")
+        
+        # Add visual indicator based on answer
+        indicator = ""
+        if rounded_val == 3: indicator = "🟩 Enig"
+        elif rounded_val == 2: indicator = "🟨 Lidt enig"
+        elif rounded_val == 1: indicator = "🟧 Lidt uenig"
+        elif rounded_val == 0: indicator = "🟥 Uenig"
+
+        q_text = q_dict.get(i, f"Spørgsmål {i}")
+        
+        summary_records.append({
+            "Q_Num": i,
+            "Spørgsmål": q_text,
+            "Gns. Værdi (0-3)": f"{val:.1f}",
+            "Fiktivt Svar": indicator,
+        })
+        
+    summary_df = pd.DataFrame(summary_records).set_index("Q_Num")
+    
+    # Render as a clean dataframe
+    st.dataframe(
+        summary_df,
+        use_container_width=True,
+        height=600,
+        column_config={
+            "Spørgsmål": st.column_config.TextColumn("Spørgsmål", width="large"),
+            "Gns. Værdi (0-3)": st.column_config.TextColumn("Matematisk Gns.", width="small"),
+            "Fiktivt Svar": st.column_config.TextColumn("Afrundet Svar", width="medium"),
+        }
+    )
+
