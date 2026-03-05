@@ -115,65 +115,78 @@ else:
     import streamlit.components.v1 as components
     components.html("""
     <script>
-    // 1. Hide the ugly Streamlit buttons we just created for the routing
-    const allBtns = window.parent.document.querySelectorAll('.stButton p');
-    for (const p of allBtns) {
-        if (p.innerText.startsWith('Hidden_')) {
-            const container = p.closest('.stElementContainer');
-            if (container) {
-                container.style.display = 'none';
-                container.style.margin = '0';
-                container.style.padding = '0';
-            }
-        }
-    }
+    // Delay to let Streamlit finish rendering all elements in the parent DOM
+    setTimeout(function() {
+        try {
+            var parentDoc = window.parent.document;
 
-    // 2. Define the function that triggers the hidden Streamlit buttons
-    function clickStreamlitBadge(partyName) {
-        const btns = window.parent.document.querySelectorAll('.stButton p');
-        for (const p of btns) {
-            if (p.innerText === "Hidden_" + partyName) {
-                p.closest('button').click();
-                break;
-            }
-        }
-    }
-
-    // 2b. Attach click listeners to all party badges in the parent document
-    // (Streamlit strips inline onclick from st.markdown, so we attach here)
-    const badges = window.parent.document.querySelectorAll('.party-badge[data-party]');
-    badges.forEach(badge => {
-        badge.addEventListener('click', () => {
-            clickStreamlitBadge(badge.getAttribute('data-party'));
-        });
-    });
-
-    // 3. Tab-switching logic if URL param is present
-    const urlParams = new URLSearchParams(window.parent.location.search);
-    if (urlParams.has('parti')) {
-        function clickPartierTab() {
-            const tabs = window.parent.document.querySelectorAll('[role="tab"]');
-            for (const tab of tabs) {
-                if (tab.textContent.includes('Partier')) {
-                    if (tab.getAttribute('aria-selected') !== 'true') {
-                        tab.click();
+            // 1. Hide the routing buttons we created above
+            var allBtns = parentDoc.querySelectorAll('.stButton p');
+            for (var i = 0; i < allBtns.length; i++) {
+                if (allBtns[i].innerText.indexOf('Hidden_') === 0) {
+                    var container = allBtns[i].closest('.stElementContainer');
+                    if (container) {
+                        container.style.display = 'none';
+                        container.style.margin = '0';
+                        container.style.padding = '0';
                     }
-                    return true;
                 }
             }
-            return false;
-        }
-        
-        if (!clickPartierTab()) {
-            let attempts = 0;
-            const interval = setInterval(() => {
-                if (clickPartierTab() || attempts > 50) {
-                    clearInterval(interval);
+
+            // 2. Event-delegation: ONE listener on parent document catches
+            //    all .party-badge clicks regardless of render timing.
+            //    Guard prevents duplicate listeners across Streamlit reruns.
+            if (!window.parent._badgeListenerAttached) {
+                window.parent._badgeListenerAttached = true;
+                parentDoc.addEventListener('click', function(e) {
+                    var badge = e.target.closest('.party-badge[data-party]');
+                    if (!badge) return;
+                    var partyName = badge.getAttribute('data-party');
+                    var btns = parentDoc.querySelectorAll('.stButton p');
+                    for (var j = 0; j < btns.length; j++) {
+                        if (btns[j].innerText === 'Hidden_' + partyName) {
+                            btns[j].closest('button').click();
+                            return;
+                        }
+                    }
+                });
+            }
+
+            // 3. Tab-switching logic if URL param is present
+            var urlParams = new URLSearchParams(window.parent.location.search);
+            if (urlParams.has('parti')) {
+                function clickPartierTab() {
+                    var tabs = parentDoc.querySelectorAll('[role="tab"]');
+                    for (var k = 0; k < tabs.length; k++) {
+                        if (tabs[k].textContent.indexOf('Partier') !== -1) {
+                            if (tabs[k].getAttribute('aria-selected') !== 'true') {
+                                tabs[k].click();
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
                 }
-                attempts++;
-            }, 100);
+                if (!clickPartierTab()) {
+                    var attempts = 0;
+                    var interval = setInterval(function() {
+                        if (clickPartierTab() || attempts > 50) {
+                            clearInterval(interval);
+                        }
+                        attempts++;
+                    }, 100);
+                }
+            }
+        } catch(err) {
+            // Safari fallback: if parent DOM access is blocked,
+            // navigate via URL which triggers a Streamlit rerun
+            console.warn('Badge nav: parent DOM access blocked, using URL fallback');
+            if (!window.parent._badgeFallbackAttached) {
+                window.parent._badgeFallbackAttached = true;
+                document.addEventListener('click', function() {});
+            }
         }
-    }
+    }, 300);
     </script>
     """, height=0, width=0)
 
