@@ -32,7 +32,7 @@ from scraper.sampling import generate_lhs_combinations, answer_hash
 DEFAULT_RUNS = 100_000
 TOP_K = 5          # Save top-K candidates per run
 CHUNK_SIZE = 5_000  # Process in chunks to keep memory usage low
-OUTPUT_FILE = "results.csv"
+OUTPUT_FILE = "data/local/results.csv"
 
 
 def load_candidates(path: str = "all_candidates.json") -> dict[str, list]:

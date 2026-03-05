@@ -37,7 +37,7 @@ def fetch_party(url):
         return url, 'Unknown'
 
 def main():
-    df = pd.read_csv('results.csv')
+    df = pd.read_csv('data/local/results.csv')
     unique_urls = df['candidate_url'].dropna().unique()
     print(f'Fetching {len(unique_urls)} urls...')
     
@@ -52,7 +52,7 @@ def main():
         return url_to_party.get(row['candidate_url'], 'Unknown')
         
     df['party'] = df.apply(get_party, axis=1)
-    df.to_csv('results.csv', index=False)
+    df.to_csv('data/local/results.csv', index=False)
     print('Fixed CSV!')
 
 if __name__ == '__main__':

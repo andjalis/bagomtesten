@@ -8,10 +8,11 @@ from a single location: `from dashboard.sections import render_party_distributio
 from dashboard.sections.party_distribution import render_party_distribution
 from dashboard.sections.gaming_analysis import render_gaming_analysis
 from dashboard.sections.question_impact import render_question_impact
-from dashboard.sections.party_drilldown import render_party_drilldown
+from dashboard.sections.party_drilldown import render_party_drilldown, render_partier_unified
 from dashboard.sections.blok_analysis import render_blok_analysis_global
 from dashboard.sections.kommune_analysis import render_kommune_analysis
 from dashboard.sections.data_foundation import render_data_foundation
+from dashboard.sections.valgkreds_section import render_valgkreds_section
 
 from dashboard.sections.kpi_hero import render_kpi_hero
 from dashboard.sections.party_pairs import render_party_pairs
@@ -22,9 +23,11 @@ __all__ = [
     "render_gaming_analysis",
     "render_question_impact",
     "render_party_drilldown",
+    "render_partier_unified",
     "render_blok_analysis_global",
     "render_kommune_analysis",
     "render_data_foundation",
+    "render_valgkreds_section",
     "render_kpi_hero",
     "render_party_pairs",
     "render_party_comparison",

@@ -24,25 +24,22 @@ import time
 
 import streamlit as st
 
-from config import REFRESH_INTERVAL, normalize_parties_df
+from config import REFRESH_INTERVAL, normalize_parties_df, PARTY_COLORS
 from dashboard.css import DASHBOARD_CSS
 from dashboard.data import load_global_kpis
 from dashboard.sections import (
     render_party_distribution,
-    render_gaming_analysis,
-    render_question_impact,
-    render_party_drilldown,
+    render_partier_unified,
     render_data_foundation,
-    render_kommune_analysis,
     render_blok_analysis_global,
     render_kpi_hero,
     render_party_pairs,
-    render_party_comparison,
+    render_valgkreds_section,
 )
 
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="DR Kandidattest — Bias Dashboard",
+    page_title="DR Kandidattest — Bias-dashboard",
     page_icon="🗳️",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -64,46 +61,65 @@ if not kpis or kpis.get("total_simulations", 0) == 0:
     st.rerun()
 
 else:
-    # ── Header ────────────────────────────────────────────────────────────────────
+    # ── Logos & Header ────────────────────────────────────────────────────────
     n_storkredse = kpis.get("storkredse", 0)
     n_candidates = kpis.get("total_candidates", 0)
 
+    # Party letter mapping for logo badges
+    PARTY_LETTERS = {
+        "Socialdemokratiet": "A",
+        "Radikale Venstre": "B",
+        "Konservative": "C",
+        "Socialistisk Folkeparti": "F",
+        "Liberal Alliance": "I",
+        "Moderaterne": "M",
+        "Dansk Folkeparti": "O",
+        "Venstre": "V",
+        "Danmarksdemokraterne": "Æ",
+        "Enhedslisten": "Ø",
+        "Alternativet": "Å",
+        "Borgernes Parti": "Q",
+    }
+
+    # Build party logo badges HTML
+    party_badges_html = ""
+    for party_name, letter in PARTY_LETTERS.items():
+        color = PARTY_COLORS.get(party_name, "#374151")
+        party_badges_html += f'<span class="party-badge" style="background-color: {color};" title="{party_name}">{letter}</span>'
+
     st.markdown(f"""
     <div class="main-header">
-        <h1>Kandidattest: Bias & Algoritme</h1>
+        <div class="header-logos">
+            <img src="https://www.dr.dk/assets/img/dr-logo-red.svg" alt="DR" class="header-logo" onerror="this.style.display='none'" />
+            <span class="header-logo-divider">×</span>
+            <img src="https://altinget.dk/images/logo/altinget-logo.svg" alt="Altinget" class="header-logo" onerror="this.style.display='none'" />
+        </div>
+        <h1>Kandidattest: Bias & algoritme</h1>
         <p>LHS-simulering af {n_storkredse} storkredse • {n_candidates} kandidater med svar • FV26</p>
+        <div class="party-badge-row">{party_badges_html}</div>
     </div>
     """, unsafe_allow_html=True)
 
     # ── Render Sections (Tabs) ────────────────────────────────────────────────
-    tab_global, tab_party, tab_compare, tab_kommune, tab_method = st.tabs(
-        ["🌍 Global Analyse", "🔍 Parti-Drilldown", "⚖️ Sammenlign Partier", "📍 Lokalt Nedslag", "⚙️ Metode & data"]
+    tab_overordnet, tab_partier, tab_valgkreds, tab_method = st.tabs(
+        ["Overordnet", "Partier", "Valgkreds", "Metode og data"]
     )
 
-    with tab_global:
+    with tab_overordnet:
         render_party_distribution()
-        st.divider()
-
-        render_gaming_analysis()
         st.divider()
 
         render_party_pairs()
         st.divider()
 
-        render_question_impact()
-        st.divider()
-
         render_blok_analysis_global()
         st.divider()
 
-    with tab_party:
-        render_party_drilldown()
-        
-    with tab_compare:
-        render_party_comparison()
+    with tab_partier:
+        render_partier_unified()
 
-    with tab_kommune:
-        render_kommune_analysis()
+    with tab_valgkreds:
+        render_valgkreds_section()
 
     with tab_method:
         render_data_foundation()

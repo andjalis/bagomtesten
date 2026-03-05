@@ -11,6 +11,9 @@ __pycache__/
 *.log
 *.json
 
+# Large local-only data (never pushed to GitHub)
+data/local/
+
 # Exception: Keep our precomputed data and lightweight candidates DB
 !data/precomputed/*.json
 !all_candidates.json

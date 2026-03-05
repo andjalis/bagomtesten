@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 
 DB_PATH = Path("history.db")
-CSV_PATH = Path("results.csv")
+CSV_PATH = Path("data/local/results.csv")
 
 def migrate():
     print("Starting migration...")

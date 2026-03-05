@@ -28,7 +28,7 @@ def render_party_distribution():
         fig_party = px.bar(
             party_counts, x="Parti", y="Antal",
             color="Parti", color_discrete_map=PARTY_COLORS,
-            title="Top-1 anbefalet parti pr. test",
+            title="Top 1-anbefalet parti pr. test",
         )
         fig_party.update_traces(
             hovertemplate="<b>%{x}</b><br>Anbefalinger: %{y}<extra></extra>"
@@ -39,7 +39,7 @@ def render_party_distribution():
             yaxis=dict(title="", showticklabels=False, showgrid=False),
             margin=dict(l=0, r=0, t=50, b=0),
         ))
-        st.plotly_chart(fig_party, use_container_width=True)
+        st.plotly_chart(fig_party, use_container_width=True, key="global_party_bar")
 
     with col_right:
         fig_pie = px.pie(
@@ -58,4 +58,4 @@ def render_party_distribution():
             showlegend=False,
             margin=dict(l=0, r=0, t=50, b=0),
         ))
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, use_container_width=True, key="global_party_pie")

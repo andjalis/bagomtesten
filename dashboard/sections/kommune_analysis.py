@@ -47,16 +47,16 @@ def render_kommune_analysis():
     with col1:
         st.metric("Simulerede testkørsler", f"{num_sims:,}".replace(",", "."))
     with col3:
-        st.metric("Top-anbefalet parti", most_rec_party)
+        st.metric("Topanbefalet parti", most_rec_party)
     with col4:
-        st.metric("Vinder-Blok", top_block)
+        st.metric("Vinderblok", top_block)
 
     st.divider()
 
     col_left, col_right = st.columns([3, 2], gap="large")
 
     with col_right:
-        st.subheader("📊 Blok-fordeling lokalt")
+        st.subheader("📊 Blokfordeling lokalt")
         st.caption("Procentvis andel af anbefalinger rullet op på rød og blå blok.")
 
         # Simply show the block distribution since we have that precalculated
@@ -80,7 +80,7 @@ def render_kommune_analysis():
             height=400,
             margin=dict(l=0, r=0, t=20, b=0),
         ))
-        st.plotly_chart(fig_party, use_container_width=True)
+        st.plotly_chart(fig_party, use_container_width=True, key="kommune_party_bar")
 
     with col_left:
         st.subheader("🥇 Hvem dominerede testen her?")

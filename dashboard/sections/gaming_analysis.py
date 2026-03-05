@@ -39,14 +39,14 @@ def _render_candidate_cards(top_candidates: pd.DataFrame, key_prefix: str = "gam
 
     sort_method = st.selectbox(
         "Sortér lister efter:",
-        ["Oftest anbefalet som 1. valg", "Flest visninger totalt i resultaterne"],
+        ["Oftest anbefalet som 1.-valg", "Flest visninger totalt i resultaterne"],
         index=0,
         label_visibility="collapsed",
         key=f"{key_prefix}_sort_candidates",
     )
 
     sort_map = {
-        "Oftest anbefalet som 1. valg": (["count"], [False]),
+        "Oftest anbefalet som 1.-valg": (["count"], [False]),
         "Flest visninger totalt i resultaterne": (["total_count", "count"], [False, False]),
     }
     cols, asc = sort_map[sort_method]
@@ -109,7 +109,7 @@ def _render_candidate_cards(top_candidates: pd.DataFrame, key_prefix: str = "gam
 
 def _render_rank_chart(rank_breakdown: pd.DataFrame):
     """Render the stacked bar chart showing candidate placement distribution from precomputed data."""
-    st.markdown("**Placering for top 15 kandidater (nr. 1 til nr. 6)**")
+    st.markdown("**Placering for top 15-kandidater (nr. 1 til nr. 6)**")
 
     total_freq = rank_breakdown.groupby("candidate_name")["Antal"].sum().to_dict()
     rank_breakdown["Total"] = rank_breakdown["candidate_name"].map(total_freq)
@@ -151,4 +151,4 @@ def _render_rank_chart(rank_breakdown: pd.DataFrame):
         barmode="stack",
         legend_title_text="",
     ))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="gaming_rank_bar")

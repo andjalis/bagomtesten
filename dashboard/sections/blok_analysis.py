@@ -11,8 +11,8 @@ from dashboard.data import load_kommune_stats
 
 def render_blok_analysis_global():
     """Render horizontal stacked bar chart showing Red vs Blue block split across all municipalities."""
-    st.subheader("🔴 Rød vs. blå blok anbefalinger pr. kommune")
-    st.caption("Andelen af top-anbefalinger, der tilfalder hhv. rød og blå blok, simuleret for kommunen.")
+    st.subheader("🔴 Rød vs. blå blok anbefalinger pr. valgkreds")
+    st.caption("Andelen af top-anbefalinger, der tilfalder hhv. rød og blå blok, simuleret for valgkredsen.")
 
     stats = load_kommune_stats()
     if stats.empty:
@@ -26,11 +26,11 @@ def render_blok_analysis_global():
 
     fig_blok.add_trace(go.Bar(
         y=stats_sorted["Kommune"], x=stats_sorted["Red_Pct"],
-        orientation="h", name="Rød Blok", marker=dict(color="#ef4444"),
+        orientation="h", name="Rød blok", marker=dict(color="#ef4444"),
     ))
     fig_blok.add_trace(go.Bar(
         y=stats_sorted["Kommune"], x=stats_sorted["Blue_Pct"],
-        orientation="h", name="Blå Blok", marker=dict(color="#60a5fa"),
+        orientation="h", name="Blå blok", marker=dict(color="#60a5fa"),
     ))
     fig_blok.add_trace(go.Bar(
         y=stats_sorted["Kommune"], x=stats_sorted["Andet_Pct"],
@@ -45,4 +45,4 @@ def render_blok_analysis_global():
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     ))
 
-    st.plotly_chart(fig_blok, use_container_width=True)
+    st.plotly_chart(fig_blok, use_container_width=True, key="blok_analysis_bar")

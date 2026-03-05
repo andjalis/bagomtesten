@@ -422,5 +422,125 @@ DASHBOARD_CSS = """
         font-size: 1.2rem;
     }
 
+    /* ── Method Section Components ── */
+    .method-step {
+        padding: 8px 0;
+    }
+    .method-step h4 {
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 1.15rem !important;
+        color: var(--accent) !important;
+        margin: 28px 0 12px 0 !important;
+        letter-spacing: -0.01em;
+    }
+    .method-step h4:first-child {
+        margin-top: 0 !important;
+    }
+    .method-step p {
+        line-height: 1.8;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+    }
+    .method-step ul, .method-step ol {
+        margin: 8px 0 16px 0;
+        padding-left: 24px;
+        color: var(--text-secondary);
+    }
+    .method-step li {
+        margin-bottom: 8px;
+        line-height: 1.7;
+        color: var(--text-secondary);
+    }
+    .method-step strong {
+        color: var(--text-primary);
+    }
+    .method-step code {
+        background: var(--bg-elevated);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: var(--accent);
+    }
+
+    .formula-box {
+        background: linear-gradient(145deg, var(--bg-surface) 0%, rgba(99, 102, 241, 0.06) 100%);
+        border: 1px solid var(--border-accent);
+        border-left: 4px solid var(--accent);
+        border-radius: var(--radius-sm);
+        padding: 20px 24px;
+        margin: 16px 0 20px 0;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.05rem;
+        color: var(--text-primary);
+        line-height: 1.8;
+        letter-spacing: 0.02em;
+    }
+
+    .method-highlight {
+        background: rgba(99, 102, 241, 0.08);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: var(--radius-md);
+        padding: 20px 24px;
+        margin: 16px 0;
+        color: var(--text-secondary);
+        line-height: 1.7;
+    }
+    .method-highlight strong {
+        color: var(--accent);
+    }
+
+    /* ── Header Logos ── */
+    .header-logos {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .header-logo {
+        height: 32px;
+        opacity: 0.85;
+        filter: brightness(0) invert(0.85);
+        transition: opacity 0.2s ease;
+    }
+    .header-logo:hover {
+        opacity: 1;
+    }
+    .header-logo-divider {
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        font-weight: 300;
+    }
+
+    /* ── Party Badge Row ── */
+    .party-badge-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    .party-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.85rem;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.2s ease;
+        cursor: default;
+        box-shadow: var(--shadow-sm);
+    }
+    .party-badge:hover {
+        transform: scale(1.15);
+        box-shadow: var(--shadow-md);
+    }
+
 </style>
 """

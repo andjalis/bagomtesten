@@ -220,10 +220,10 @@ def main():
                         impact_data.append({
                             "Spørgsmål": f"Q{i}",
                             "Tekst": q_texts.get(i, ""),
-                            "Indflydelse (Effect Size)": float(effect_size)
+                            "Indflydelse (effect size)": float(effect_size)
                         })
             
-            impact_df = pd.DataFrame(impact_data).sort_values("Indflydelse (Effect Size)", ascending=False)
+            impact_df = pd.DataFrame(impact_data).sort_values("Indflydelse (effect size)", ascending=False)
             impact_df.to_json(OUT_DIR / "question_impact.json", orient="records", force_ascii=False)
     except Exception as e:
         print(f"Warning: Could not build question_impact.json - {e}")
@@ -234,8 +234,8 @@ def main():
     blue_block = ["Venstre", "Liberal Alliance", "Konservative", "Danmarksdemokraterne", "Dansk Folkeparti", "Borgernes Parti"]
 
     def assign_block(p):
-        if p in red_block: return "Rød Blok"
-        if p in blue_block: return "Blå Blok"
+        if p in red_block: return "Rød blok"
+        if p in blue_block: return "Blå blok"
         return "Andet"
 
     top1_kommune = top1.copy()
@@ -247,8 +247,8 @@ def main():
         total = len(group)
         if total == 0: continue
             
-        red_pct = float(block_counts.get("Rød Blok", 0) / total * 100)
-        blue_pct = float(block_counts.get("Blå Blok", 0) / total * 100)
+        red_pct = float(block_counts.get("Rød blok", 0) / total * 100)
+        blue_pct = float(block_counts.get("Blå blok", 0) / total * 100)
         
         top_party = group["party"].value_counts().index[0]
         top_candidate = group["candidate_name"].value_counts().index[0]
@@ -257,7 +257,7 @@ def main():
             "Kommune": str(muni),
             "Red_Pct": red_pct,
             "Blue_Pct": blue_pct,
-            "Vinder_Blok": "Rød Blok" if red_pct > blue_pct else ("Blå Blok" if blue_pct > red_pct else "Lige"),
+            "Vinder_Blok": "Rød blok" if red_pct > blue_pct else ("Blå blok" if blue_pct > red_pct else "Lige"),
             "Top_Party": str(top_party),
             "Top_Candidate": str(top_candidate),
             "Total_Tests": int(total)

@@ -8,7 +8,7 @@ from dashboard.sections._plotly_theme import base_layout
 
 def render_question_impact():
     """Render a horizontal bar chart of question effect sizes."""
-    st.subheader("🎯 Spørgsmåls-Indflydelse (Effect Size)")
+    st.subheader("🎯 Spørgsmålsindflydelse (effect size)")
     st.caption("Viser hvilke spørgsmål, der i gennemsnit skaber størst udsving i testens anbefalinger.")
 
     impact_df = load_question_impact()
@@ -17,20 +17,20 @@ def render_question_impact():
         return
 
     # Sort ascending for plotly horizontal bar
-    impact_df = impact_df.sort_values("Indflydelse (Effect Size)", ascending=True)
+    impact_df = impact_df.sort_values("Indflydelse (effect size)", ascending=True)
 
     fig = px.bar(
         impact_df,
-        x="Indflydelse (Effect Size)",
+        x="Indflydelse (effect size)",
         y="Spørgsmål",
         orientation="h",
-        color="Indflydelse (Effect Size)",
+        color="Indflydelse (effect size)",
         color_continuous_scale="Viridis",
-        hover_data={"Tekst": True, "Indflydelse (Effect Size)": ":.1f"}
+        hover_data={"Tekst": True, "Indflydelse (effect size)": ":.1f"}
     )
 
     fig.update_layout(**base_layout(
-        xaxis=dict(title="Max Variations-point pr. spørgsmål"),
+        xaxis=dict(title="Maks. variationspoint per spørgsmål"),
         yaxis=dict(title=""),
         coloraxis_showscale=False,
         height=max(400, len(impact_df) * 25),
@@ -41,4 +41,4 @@ def render_question_impact():
         hovertemplate="<b>%{y}</b><br>Indflydelse: %{x:.1f} point<br><i>%{customdata[0]}</i><extra></extra>"
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="question_impact_bar")

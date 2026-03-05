@@ -30,7 +30,7 @@ def render_correlation_analysis():
     st.divider()
 
     # ── Heatmap: average answer per party ──
-    st.subheader("🔗 Svarmønstres korrelation med anbefalede partier")
+    st.subheader("🔗 Svarmønstrens korrelation med anbefalede partier")
     question_cols = [f"Q{i+1}" for i in range(25)]
     party_means = merged.groupby("party")[question_cols].mean()
 
@@ -57,7 +57,7 @@ def render_correlation_analysis():
             xgap=1, ygap=1,
         ))
         fig_hm.update_traces(
-            hovertemplate="<b>%{x}</b><br>Parti: %{y}<br>Gns. Svar: %{z:.2f}<extra></extra>"
+            hovertemplate="<b>%{x}</b><br>Parti: %{y}<br>Gns. svar: %{z:.2f}<extra></extra>"
         )
 
         fig_hm.update_layout(**base_layout(
@@ -76,6 +76,6 @@ def render_correlation_analysis():
             height=700,
             margin=dict(l=150, t=50, b=100, r=0),
         ))
-        st.plotly_chart(fig_hm, use_container_width=True)
+        st.plotly_chart(fig_hm, use_container_width=True, key="correlation_heatmap")
     else:
         st.info("Ingen partier at vise data for endnu.")

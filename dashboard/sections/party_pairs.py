@@ -12,7 +12,7 @@ from dashboard.data import load_party_pairs
 
 def render_party_pairs():
     """Render heatmap of party co-occurrence: when party X is #1, who's #2?"""
-    st.subheader("🤝 Parti-par analyse")
+    st.subheader("🤝 Parti-par-analyse")
     st.caption(
         "Når et parti anbefales som nr. 1, hvilket parti er så oftest nr. 2? "
         "Afslører naturlige parti-klynger i testens algoritme."
@@ -57,16 +57,16 @@ def render_party_pairs():
     ))
 
     fig.update_layout(**base_layout(
-        xaxis=dict(title="Nr. 2 Anbefaling", tickangle=-45, side="bottom"),
+        xaxis=dict(title="Nr. 2-anbefaling", tickangle=-45, side="bottom"),
         yaxis=dict(
-            title="Nr. 1 Anbefaling",
+            title="Nr. 1-anbefaling",
             autorange="reversed",
             showgrid=False,
         ),
         height=600,
         margin=dict(l=150, r=0, t=20, b=120),
     ))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="party_pairs_heatmap")
 
     # Insight: strongest pair
     mask = cross_pct.values.copy()

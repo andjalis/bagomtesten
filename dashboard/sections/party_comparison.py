@@ -59,7 +59,7 @@ def render_party_comparison():
     q_dict = load_questions()
 
     if not c_df.empty:
-        st.subheader("🎯 Svar-profil sammenligning")
+        st.subheader("🎯 Svarprofil-sammenligning")
         st.caption("Sammenligner det gennemsnitlige svarmønster på tværs af alle 25 spørgsmål for kandidater fra de to valgte partier.")
         
         q_cols = [f"Q{i+1}" for i in range(25)]
@@ -104,7 +104,7 @@ def render_party_comparison():
         if "yaxis" in radar_layout: del radar_layout["yaxis"]
         fig_radar.update_layout(**radar_layout)
         
-        st.plotly_chart(fig_radar, use_container_width=True)
+        st.plotly_chart(fig_radar, use_container_width=True, key="party_comparison_radar")
 
         # Highlight biggest differences
         st.markdown("**Størst uenighed mellem de to partier:**")

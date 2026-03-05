@@ -26,13 +26,13 @@ def render_kpi_hero(kpis: dict):
 
     # ── Bias severity label ──
     if bias_index < 15:
-        bias_label, bias_color = "Lav", "#34d399"
+        bias_label, bias_color = "lav", "#34d399"
     elif bias_index < 40:
-        bias_label, bias_color = "Moderat", "#fbbf24"
+        bias_label, bias_color = "moderat", "#fbbf24"
     elif bias_index < 70:
-        bias_label, bias_color = "Høj", "#f97316"
+        bias_label, bias_color = "høj", "#f97316"
     else:
-        bias_label, bias_color = "Kritisk", "#ef4444"
+        bias_label, bias_color = "kritisk", "#ef4444"
 
     over_rep_color = PARTY_COLORS.get(over_rep_party, "#818cf8")
     top_cand_color = PARTY_COLORS.get(top_cand_party, "#818cf8")
@@ -68,7 +68,7 @@ def render_kpi_hero(kpis: dict):
             <div class="kpi-sub">{k_parties} partier • {n_candidates} kandidater</div>
         </div>
         <div class="kpi-card kpi-accent">
-            <div class="kpi-label">Bias index</div>
+            <div class="kpi-label">Bias-index</div>
             <div class="kpi-value" style="color: {bias_color};">{bias_index}</div>
             <div class="kpi-sub">
                 <span class="kpi-badge" style="background: {bias_color}20; color: {bias_color};">{bias_label} skævvridning</span>
@@ -94,15 +94,15 @@ def render_kpi_hero(kpis: dict):
     </div>
     """, unsafe_allow_html=True)
 
-    with st.expander("ℹ️ Hvad betyder Bias Index?"):
+    with st.expander("ℹ️ Hvad betyder bias-index?"):
         st.markdown(f"""
-        **Bias Index** er et mål for, hvor skævt testens algoritme fordeler sine top-anbefalinger sammenlignet med en fuldstændig fair fordeling.
+        **Bias-index** er et mål for, hvor skævt testens algoritme fordeler sine top-anbefalinger sammenlignet med en fuldstændig fair fordeling.
         
-        Vi beregner det ved hjælp af en statistisk metode kaldet *Chi-i-anden (χ²)*:
+        Vi beregner det ved hjælp af en statistisk metode kaldet *chi-i-anden (χ²)*:
         1. **Forventet fordeling:** Hvis testen var 100% neutral, ville hvert af de {k_parties} partier få præcis {expected_pct:.1f}% af førstepladserne.
         2. **Faktisk fordeling:** Vi kigger på, hvor mange førstepladser hvert parti *rent faktisk* har fået i de {_dk(total_sims)} simuleringer.
-        3. **Afvigelse (Chi-Square):** Vi summerer forskellene mellem det forventede og det faktiske for alle partier.
+        3. **Afvigelse (chi-i-anden):** Vi summerer forskellene mellem det forventede og det faktiske for alle partier.
         4. **Index (0-100):** For nemheds skyld omregner vi resultatet til en skala fra 0 til 100, hvor 0 betyder "perfekt balance" og 100 betyder "ekstrem skævvridning" (f.eks. hvis ét parti fik alle top-anbefalinger).
         
-        Kort sagt: **Jo højere Bias Index, jo mere systematisk fordel har et snævert udsnit af partier i testen.**
+        Kort sagt: **Jo højere bias-index, jo mere systematisk fordel har et snævert udsnit af partier i testen.**
         """, unsafe_allow_html=True)

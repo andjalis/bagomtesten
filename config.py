@@ -9,8 +9,8 @@ from pathlib import Path
 
 # ── File Paths ────────────────────────────────────────────────────────────────
 PROJECT_DIR = Path(__file__).parent
-DB_PATH = PROJECT_DIR / "history.db"
-CSV_PATH = PROJECT_DIR / "results.csv"
+DB_PATH = PROJECT_DIR / "data" / "history.db"
+CSV_PATH = PROJECT_DIR / "data" / "local" / "results.csv"
 LOG_PATH = PROJECT_DIR / "scraper.log"
 
 # ── Scraper Settings ─────────────────────────────────────────────────────────
