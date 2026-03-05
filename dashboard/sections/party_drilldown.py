@@ -271,38 +271,37 @@ def render_party_drilldown():
 
 
 def render_partier_unified():
-    """Unified Partier tab: party drilldown + inline comparison using a shared party selector."""
+    """Unified Partier tab: single-party drilldown at top, collapsible comparison at bottom."""
     from dashboard.data import load_party_rankings
 
     st.header("🔍 Parti-analyse")
-    st.caption("Vælg et parti for at se dets detaljerede profil — og sammenlign det med et andet parti.")
+    st.caption("Vælg et parti for at se dets detaljerede profil.")
 
     parties = list(PARTY_COLORS.keys())
 
-    # ── Shared party selector ──
-    col_sel1, col_sel2 = st.columns(2)
-    with col_sel1:
-        party = st.selectbox(
-            "Vælg parti til dybdegående analyse:",
-            parties,
-            index=parties.index("Alternativet") if "Alternativet" in parties else 0,
-            key="unified_party_main",
-        )
-    with col_sel2:
-        compare_party = st.selectbox(
-            "Sammenlign med:",
-            [p for p in parties if p != party],
-            index=([p for p in parties if p != party].index("Venstre")
-                   if "Venstre" in [p for p in parties if p != party] else 0),
-            key="unified_party_compare",
-        )
+    # ── Read query params for badge click-through ──
+    qp = st.query_params
+    preselected = qp.get("parti", None)
+    default_idx = 0
+    if preselected and preselected in parties:
+        default_idx = parties.index(preselected)
+    elif "Alternativet" in parties:
+        default_idx = parties.index("Alternativet")
+
+    # ── Single party selector ──
+    party = st.selectbox(
+        "Vælg parti:",
+        parties,
+        index=default_idx,
+        key="unified_party_main",
+    )
 
     p_color = PARTY_COLORS.get(party, "#3b82f6")
 
     st.divider()
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # SECTION A — DRILLDOWN (inline, same as render_party_drilldown but using shared selector)
+    # DRILLDOWN — all content for the selected party
     # ═══════════════════════════════════════════════════════════════════════════
 
     # 1. Geographic strength
@@ -486,93 +485,109 @@ def render_partier_unified():
     st.divider()
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # SECTION B — COMPARISON (party vs compare_party, using the shared selectors)
+    # COMPARISON — collapsed by default, elegant reveal
     # ═══════════════════════════════════════════════════════════════════════════
 
-    color1 = PARTY_COLORS.get(party, "#ef4444")
-    color2 = PARTY_COLORS.get(compare_party, "#3b82f6")
+    PARTY_LETTERS = {
+        "Socialdemokratiet": "A", "Radikale Venstre": "B", "Konservative": "C",
+        "Socialistisk Folkeparti": "F", "Liberal Alliance": "I", "Moderaterne": "M",
+        "Dansk Folkeparti": "O", "Venstre": "V", "Danmarksdemokraterne": "Æ",
+        "Enhedslisten": "Ø", "Alternativet": "Å", "Borgernes Parti": "Q",
+    }
+    p_letter = PARTY_LETTERS.get(party, "?")
 
-    st.header(f"⚖️ {party} vs. {compare_party}")
-    st.caption("Side-om-side sammenligning af de to valgte partier.")
+    with st.expander(f"⚖️  Sammenlign {party} ({p_letter}) med et andet parti", expanded=False):
+        other_parties = [p for p in parties if p != party]
+        compare_party = st.selectbox(
+            "Sammenlign med:",
+            other_parties,
+            index=(other_parties.index("Venstre") if "Venstre" in other_parties else 0),
+            key="unified_party_compare",
+        )
 
-    # Key figures
-    party_rankings = load_party_rankings()
-    if not party_rankings.empty:
-        st.subheader("📊 Nøgletal")
-        count1 = party_rankings[party_rankings["Party"] == party]["Count"].iloc[0] if not party_rankings[party_rankings["Party"] == party].empty else 0
-        count2 = party_rankings[party_rankings["Party"] == compare_party]["Count"].iloc[0] if not party_rankings[party_rankings["Party"] == compare_party].empty else 0
-        col_s1, col_s2 = st.columns(2)
-        with col_s1:
-            st.metric(f"{party} — top-1 visninger", f"{count1:,}".replace(",", "."))
-        with col_s2:
-            st.metric(f"{compare_party} — top-1 visninger", f"{count2:,}".replace(",", "."))
+        color1 = PARTY_COLORS.get(party, "#ef4444")
+        color2 = PARTY_COLORS.get(compare_party, "#3b82f6")
+
         st.divider()
 
-    # Radar chart
-    if not c_df.empty:
-        st.subheader("🎯 Svarprofil-sammenligning")
-        st.caption("Gennemsnitligt svarmønster på tværs af alle 25 spørgsmål for begge partier.")
+        # Key figures
+        party_rankings = load_party_rankings()
+        if not party_rankings.empty:
+            st.subheader("📊 Nøgletal")
+            count1 = party_rankings[party_rankings["Party"] == party]["Count"].iloc[0] if not party_rankings[party_rankings["Party"] == party].empty else 0
+            count2 = party_rankings[party_rankings["Party"] == compare_party]["Count"].iloc[0] if not party_rankings[party_rankings["Party"] == compare_party].empty else 0
+            col_s1, col_s2 = st.columns(2)
+            with col_s1:
+                st.metric(f"{party} — top-1 visninger", f"{count1:,}".replace(",", "."))
+            with col_s2:
+                st.metric(f"{compare_party} — top-1 visninger", f"{count2:,}".replace(",", "."))
+            st.divider()
 
-        mean1 = c_df[c_df["party"] == party][q_cols].mean()
-        mean2 = c_df[c_df["party"] == compare_party][q_cols].mean()
+        # Radar chart
+        if not c_df.empty:
+            st.subheader("🎯 Svarprofil-sammenligning")
+            st.caption("Gennemsnitligt svarmønster på tværs af alle 25 spørgsmål for begge partier.")
 
-        diffs = (mean1 - mean2).abs().sort_values(ascending=False)
-        top_diff_qs = diffs.head(5).index.tolist()
+            mean1 = c_df[c_df["party"] == party][q_cols].mean()
+            mean2 = c_df[c_df["party"] == compare_party][q_cols].mean()
 
-        short_labels = []
-        for q in q_cols:
-            q_num = int(q.replace("Q", ""))
-            text = q_dict.get(q_num, q)
-            short_labels.append(f"Q{q_num}: {text[:20]}...")
+            diffs = (mean1 - mean2).abs().sort_values(ascending=False)
+            top_diff_qs = diffs.head(5).index.tolist()
 
-        fig_radar = go.Figure()
-        fig_radar.add_trace(go.Scatterpolar(
-            r=mean1.values, theta=short_labels, fill="toself", name=party,
-            line_color=color1, opacity=0.8
-        ))
-        fig_radar.add_trace(go.Scatterpolar(
-            r=mean2.values, theta=short_labels, fill="toself", name=compare_party,
-            line_color=color2, opacity=0.8
-        ))
-
-        radar_layout = base_layout(
-            polar=dict(
-                radialaxis=dict(visible=True, range=[0, 3], tickvals=[0, 1, 2, 3],
-                                ticktext=["Uenig", "Lidt uenig", "Lidt enig", "Enig"],
-                                tickfont=dict(color="#cbd5e1")),
-                angularaxis=dict(tickfont=dict(size=10, color="#94a3b8"), rotation=90, direction="clockwise"),
-                bgcolor="rgba(0,0,0,0)",
-            ),
-            showlegend=True,
-            legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5),
-            margin=dict(l=50, r=50, t=40, b=40),
-            height=600,
-        )
-        if "xaxis" in radar_layout: del radar_layout["xaxis"]
-        if "yaxis" in radar_layout: del radar_layout["yaxis"]
-        fig_radar.update_layout(**radar_layout)
-
-        st.plotly_chart(fig_radar, use_container_width=True, key="unified_comparison_radar")
-
-        # Biggest differences
-        st.markdown("**Størst uenighed mellem de to partier:**")
-        cols = st.columns(min(len(top_diff_qs), 3))
-        for i, col in enumerate(cols):
-            if i < len(top_diff_qs):
-                q = top_diff_qs[i]
+            short_labels = []
+            for q in q_cols:
                 q_num = int(q.replace("Q", ""))
-                q_text = q_dict.get(q_num, q)
-                val1 = mean1[q]
-                val2 = mean2[q]
-                with col:
-                    st.markdown(f"""
-                    <div style="background: var(--bg-elevated); padding: 15px; border-radius: var(--radius-md); height: 100%;">
-                        <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">Spørgsmål {q_num}</p>
-                        <p style="font-weight:600; font-size:0.95rem; margin:5px 0 10px 0;">{q_text}</p>
-                        <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-                            <span style="color:{color1}; font-weight:700;">{party}: {val1:.1f}</span>
-                            <span style="color:{color2}; font-weight:700;">{compare_party}: {val2:.1f}</span>
+                text = q_dict.get(q_num, q)
+                short_labels.append(f"Q{q_num}: {text[:20]}...")
+
+            fig_radar = go.Figure()
+            fig_radar.add_trace(go.Scatterpolar(
+                r=mean1.values, theta=short_labels, fill="toself", name=party,
+                line_color=color1, opacity=0.8
+            ))
+            fig_radar.add_trace(go.Scatterpolar(
+                r=mean2.values, theta=short_labels, fill="toself", name=compare_party,
+                line_color=color2, opacity=0.8
+            ))
+
+            radar_layout = base_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 3], tickvals=[0, 1, 2, 3],
+                                    ticktext=["Uenig", "Lidt uenig", "Lidt enig", "Enig"],
+                                    tickfont=dict(color="#cbd5e1")),
+                    angularaxis=dict(tickfont=dict(size=10, color="#94a3b8"), rotation=90, direction="clockwise"),
+                    bgcolor="rgba(0,0,0,0)",
+                ),
+                showlegend=True,
+                legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5),
+                margin=dict(l=50, r=50, t=40, b=40),
+                height=600,
+            )
+            if "xaxis" in radar_layout: del radar_layout["xaxis"]
+            if "yaxis" in radar_layout: del radar_layout["yaxis"]
+            fig_radar.update_layout(**radar_layout)
+
+            st.plotly_chart(fig_radar, use_container_width=True, key="unified_comparison_radar")
+
+            # Biggest differences
+            st.markdown("**Størst uenighed mellem de to partier:**")
+            cols = st.columns(min(len(top_diff_qs), 3))
+            for i, col in enumerate(cols):
+                if i < len(top_diff_qs):
+                    q = top_diff_qs[i]
+                    q_num = int(q.replace("Q", ""))
+                    q_text = q_dict.get(q_num, q)
+                    val1 = mean1[q]
+                    val2 = mean2[q]
+                    with col:
+                        st.markdown(f"""
+                        <div style="background: var(--bg-elevated); padding: 15px; border-radius: var(--radius-md); height: 100%;">
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">Spørgsmål {q_num}</p>
+                            <p style="font-weight:600; font-size:0.95rem; margin:5px 0 10px 0;">{q_text}</p>
+                            <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                                <span style="color:{color1}; font-weight:700;">{party}: {val1:.1f}</span>
+                                <span style="color:{color2}; font-weight:700;">{compare_party}: {val2:.1f}</span>
+                            </div>
                         </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                        """, unsafe_allow_html=True)
 

@@ -81,11 +81,15 @@ else:
         "Borgernes Parti": "Q",
     }
 
-    # Build party logo badges HTML
+    # Build party logo badges HTML — clickable links to Partier tab
     party_badges_html = ""
     for party_name, letter in PARTY_LETTERS.items():
         color = PARTY_COLORS.get(party_name, "#374151")
-        party_badges_html += f'<span class="party-badge" style="background-color: {color};" title="{party_name}">{letter}</span>'
+        party_badges_html += (
+            f'<a href="?parti={party_name}" class="party-badge" '
+            f'style="background-color: {color}; text-decoration: none; color: white;" '
+            f'title="Se analyse af {party_name}">{letter}</a>'
+        )
 
     st.markdown(f"""
     <div class="main-header">
@@ -99,6 +103,22 @@ else:
         <div class="party-badge-row">{party_badges_html}</div>
     </div>
     """, unsafe_allow_html=True)
+
+    # ── Auto-switch to Partier tab when ?parti= is set ──
+    if st.query_params.get("parti"):
+        st.markdown("""
+        <script>
+        (function() {
+            const tabs = window.parent.document.querySelectorAll('[role="tab"]');
+            for (const tab of tabs) {
+                if (tab.textContent.trim() === 'Partier') {
+                    tab.click();
+                    break;
+                }
+            }
+        })();
+        </script>
+        """, unsafe_allow_html=True)
 
     # ── Render Sections (Tabs) ────────────────────────────────────────────────
     tab_overordnet, tab_partier, tab_valgkreds, tab_method = st.tabs(
