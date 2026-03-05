@@ -109,15 +109,28 @@ else:
         import streamlit.components.v1 as components
         components.html("""
         <script>
-        (function() {
+        function clickPartierTab() {
             const tabs = window.parent.document.querySelectorAll('[role="tab"]');
             for (const tab of tabs) {
-                if (tab.textContent.trim() === 'Partier') {
-                    tab.click();
-                    break;
+                if (tab.textContent.includes('Partier')) {
+                    if (tab.getAttribute('aria-selected') !== 'true') {
+                        tab.click();
+                    }
+                    return true;
                 }
             }
-        })();
+            return false;
+        }
+        
+        if (!clickPartierTab()) {
+            let attempts = 0;
+            const interval = setInterval(() => {
+                if (clickPartierTab() || attempts > 50) {
+                    clearInterval(interval);
+                }
+                attempts++;
+            }, 100);
+        }
         </script>
         """, height=0, width=0)
 
