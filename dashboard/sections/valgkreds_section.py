@@ -39,12 +39,15 @@ def render_valgkreds_section():
 
     # ── Top stats ──
     num_sims = muni_row.get("Total_Tests", 0)
+    total_sims = int(k_stats["Total_Tests"].sum())
     most_rec_party = muni_row.get("Top_Party", "N/A")
     top_block = muni_row.get("Vinder_Blok", "N/A")
 
-    col1, col3, col4 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Simulerede testkørsler", f"{num_sims:,}".replace(",", "."))
+        st.metric("Testkørsler i alt", f"{total_sims:,}".replace(",", "."))
+    with col2:
+        st.metric(f"Heraf i {selected_muni}", f"{num_sims:,}".replace(",", "."))
     with col3:
         st.metric("Topanbefalet parti", most_rec_party)
     with col4:

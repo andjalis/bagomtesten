@@ -523,7 +523,7 @@ def render_partier_unified():
                 st.metric(f"{compare_party} — top-1 visninger", f"{count2:,}".replace(",", "."))
             st.divider()
 
-        # Radar chart
+        # Comparison chart — grouped horizontal bar (readable)
         if not c_df.empty:
             st.subheader("🎯 Svarprofil-sammenligning")
             st.caption("Gennemsnitligt svarmønster på tværs af alle 25 spørgsmål for begge partier.")
@@ -534,40 +534,36 @@ def render_partier_unified():
             diffs = (mean1 - mean2).abs().sort_values(ascending=False)
             top_diff_qs = diffs.head(5).index.tolist()
 
-            short_labels = []
+            # Build comparison dataframe
+            compare_records = []
             for q in q_cols:
                 q_num = int(q.replace("Q", ""))
-                text = q_dict.get(q_num, q)
-                short_labels.append(f"Q{q_num}: {text[:20]}...")
+                q_text = q_dict.get(q_num, f"Q{q_num}")
+                label = f"Q{q_num}. {q_text[:55]}{'…' if len(q_text) > 55 else ''}"
+                compare_records.append({"Spørgsmål": label, "Parti": party, "Gns. svar": mean1[q], "q_num": q_num})
+                compare_records.append({"Spørgsmål": label, "Parti": compare_party, "Gns. svar": mean2[q], "q_num": q_num})
 
-            fig_radar = go.Figure()
-            fig_radar.add_trace(go.Scatterpolar(
-                r=mean1.values, theta=short_labels, fill="toself", name=party,
-                line_color=color1, opacity=0.8
-            ))
-            fig_radar.add_trace(go.Scatterpolar(
-                r=mean2.values, theta=short_labels, fill="toself", name=compare_party,
-                line_color=color2, opacity=0.8
-            ))
+            compare_df = pd.DataFrame(compare_records)
+            compare_df = compare_df.sort_values("q_num")
 
-            radar_layout = base_layout(
-                polar=dict(
-                    radialaxis=dict(visible=True, range=[0, 3], tickvals=[0, 1, 2, 3],
-                                    ticktext=["Uenig", "Lidt uenig", "Lidt enig", "Enig"],
-                                    tickfont=dict(color="#cbd5e1")),
-                    angularaxis=dict(tickfont=dict(size=10, color="#94a3b8"), rotation=90, direction="clockwise"),
-                    bgcolor="rgba(0,0,0,0)",
-                ),
-                showlegend=True,
-                legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5),
-                margin=dict(l=50, r=50, t=40, b=40),
-                height=600,
+            fig_compare = px.bar(
+                compare_df, y="Spørgsmål", x="Gns. svar", color="Parti",
+                color_discrete_map={party: color1, compare_party: color2},
+                orientation="h", barmode="group", title="",
             )
-            if "xaxis" in radar_layout: del radar_layout["xaxis"]
-            if "yaxis" in radar_layout: del radar_layout["yaxis"]
-            fig_radar.update_layout(**radar_layout)
-
-            st.plotly_chart(fig_radar, use_container_width=True, key="unified_comparison_radar")
+            fig_compare.update_traces(
+                hovertemplate="<b>%{y}</b><br>%{fullData.name}: %{x:.2f}<extra></extra>"
+            )
+            fig_compare.update_layout(**base_layout(
+                xaxis=dict(title="Gns. svar (0=Uenig → 3=Enig)", range=[0, 3.2],
+                           tickvals=[0, 1, 2, 3], ticktext=["Uenig", "Lidt uenig", "Lidt enig", "Enig"]),
+                yaxis=dict(title="", autorange="reversed", tickfont=dict(size=11)),
+                height=max(700, len(q_cols) * 38),
+                margin=dict(l=0, r=0, t=10, b=0),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
+                bargap=0.25, bargroupgap=0.05,
+            ))
+            st.plotly_chart(fig_compare, use_container_width=True, key="unified_comparison_bars")
 
             # Biggest differences
             st.markdown("**Størst uenighed mellem de to partier:**")

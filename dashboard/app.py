@@ -106,7 +106,8 @@ else:
 
     # ── Auto-switch to Partier tab when ?parti= is set ──
     if st.query_params.get("parti"):
-        st.markdown("""
+        import streamlit.components.v1 as components
+        components.html("""
         <script>
         (function() {
             const tabs = window.parent.document.querySelectorAll('[role="tab"]');
@@ -118,7 +119,7 @@ else:
             }
         })();
         </script>
-        """, unsafe_allow_html=True)
+        """, height=0, width=0)
 
     # ── Render Sections (Tabs) ────────────────────────────────────────────────
     tab_overordnet, tab_partier, tab_valgkreds, tab_method = st.tabs(
