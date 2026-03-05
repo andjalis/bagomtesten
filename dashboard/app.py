@@ -86,7 +86,7 @@ else:
     for party_name, letter in PARTY_LETTERS.items():
         color = PARTY_COLORS.get(party_name, "#374151")
         party_badges_html += (
-            f'<span class="party-badge" onclick="clickStreamlitBadge(\'{party_name}\')" '
+            f'<span class="party-badge" data-party="{party_name}" '
             f'style="background-color: {color}; cursor: pointer; color: white;" '
             f'title="Se analyse af {party_name}">{letter}</span>'
         )
@@ -128,8 +128,8 @@ else:
         }
     }
 
-    // 2. Define the exact function triggered by the HTML badges
-    window.parent.clickStreamlitBadge = function(partyName) {
+    // 2. Define the function that triggers the hidden Streamlit buttons
+    function clickStreamlitBadge(partyName) {
         const btns = window.parent.document.querySelectorAll('.stButton p');
         for (const p of btns) {
             if (p.innerText === "Hidden_" + partyName) {
@@ -137,7 +137,16 @@ else:
                 break;
             }
         }
-    };
+    }
+
+    // 2b. Attach click listeners to all party badges in the parent document
+    // (Streamlit strips inline onclick from st.markdown, so we attach here)
+    const badges = window.parent.document.querySelectorAll('.party-badge[data-party]');
+    badges.forEach(badge => {
+        badge.addEventListener('click', () => {
+            clickStreamlitBadge(badge.getAttribute('data-party'));
+        });
+    });
 
     // 3. Tab-switching logic if URL param is present
     const urlParams = new URLSearchParams(window.parent.location.search);
