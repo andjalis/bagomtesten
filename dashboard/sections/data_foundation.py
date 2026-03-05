@@ -27,9 +27,9 @@ def render_data_foundation():
         <div class="info-card">
             <div class="info-card-title">Metodologi & datagrundlag</div>
             <div class="info-card-text">
-                <strong>Vi scrapede indledningsvist over 10.000 ægte testkørsler manuelt</strong> fra DR's platform.
-                Vores analyse af denne data beviste en 100% lineær og symmetrisk sammenhæng i DR's algoritme (dvs. ingen "sort boks").<br/><br/>
-                På baggrund af dette har vi kunnet <strong>simulere resten af svarene ekstremt præcist</strong>. Vi har simuleret testen
+                <strong>Jeg scrapede indledningsvist over 10.000 ægte testkørsler manuelt</strong> fra DR's platform.
+                Min analyse af denne data beviste en 100% lineær og symmetrisk sammenhæng i DR's algoritme (dvs. ingen "sort boks").<br/><br/>
+                På baggrund af dette har jeg kunnet <strong>simulere resten af svarene ekstremt præcist</strong>. Jeg har simuleret testen
                 100.000 gange pr. storkreds med systematisk fordelte svar via <strong>Latin Hypercube Sampling (LHS)</strong>.
                 Dette garanterer, at det politiske spektrum dækkes fuldt ud uden at belaste DR's servere.<br/><br/>
                 Statistisk set <em>burde</em> resultaterne fordele sig rimelig jævnt mellem partierne ved helt tilfældige svar.
@@ -43,7 +43,7 @@ def render_data_foundation():
         <div class="info-card">
             <div class="info-card-title">Analyse: Hvordan vægtes dine svar?</div>
             <div class="info-card-text">
-                Vores data-analyse bekræfter en <strong>lineær og symmetrisk vægtning</strong> i DR's algoritme:
+                Min data-analyse bekræfter en <strong>lineær og symmetrisk vægtning</strong> i DR's algoritme:
                 <ul>
                     <li><strong>Fuld symmetri:</strong> "Enig" og "Uenig" vægtes præcis lige højt.</li>
                     <li><strong>Midter-fordelen:</strong> Svaret "Lidt enig/uenig" giver statistisk set et
@@ -116,7 +116,7 @@ def _render_phase_1():
 
             <h4>1.1 Scraping af testkørsler</h4>
             <p>
-                Vi har udført <strong>over 10.000 fuldstændige gennemspilninger</strong> af DR's Kandidattest
+                Jeg har udført <strong>over 10.000 fuldstændige gennemspilninger</strong> af DR's Kandidattest
                 via en automatiseret, headless Playwright-browser (Chromium). Hver kørsel fungerer præcis
                 som en rigtig bruger, der besvarer alle 25 spørgsmål og modtager en rangeret liste af
                 anbefalede kandidater med match-procenter.
@@ -135,13 +135,13 @@ def _render_phase_1():
             <h4>1.2 Anti-detekterings-foranstaltninger</h4>
             <p>
                 For at undgå at blive blokeret af DR's servere og for at simulere naturlig brugeradfærd
-                implementerede vi følgende foranstaltninger:
+                implementerede jeg følgende foranstaltninger:
             </p>
             <ul>
                 <li><strong>Randomiserede kommuner:</strong> Hver kørsel vælger tilfældigt blandt 28
                 danske kommuner (København, Aarhus, Odense, Aalborg osv.), så anmodningerne
                 stammer fra unikke adresser.</li>
-                <li><strong>Rotation af User-Agent:</strong> Vi roterer mellem 5 forskellige browser-identificeringer
+                <li><strong>Rotation af User-Agent:</strong> Jeg roterer mellem 5 forskellige browser-identificeringer
                 (Chrome, Firefox, Safari på Windows og macOS) for at undgå fingerprinting.</li>
                 <li><strong>Menneske-lignende forsinkelser:</strong> Mellem hvert klik indsættes en tilfældig
                 forsinkelse på 0,5–1,3 sekunder, der emulerer normal bruger-interaktion.</li>
@@ -150,8 +150,8 @@ def _render_phase_1():
 
             <h4>1.3 Scraping af kandidatprofiler</h4>
             <p>
-                Sideløbende med testkørslerne har vi scraped <strong>samtlige kandidatprofiler</strong> fra
-                DR's platform. Vi itererede gennem kandidat-ID'er fra 1 til 950 på URL'en:
+                Sideløbende med testkørslerne har jeg scraped <strong>samtlige kandidatprofiler</strong> fra
+                DR's platform. Jeg itererede gennem kandidat-ID'er fra 1 til 950 på URL'en:
             </p>
         </div>
     </div>
@@ -169,9 +169,9 @@ def _render_phase_1():
                 der håndterer DR's lazy-loadede DOM ved gradvist at scrolle ned og aflæse nye elementer</li>
             </ul>
             <p>
-                Ud af de 950 scannede ID'er fandt vi <strong>714 aktive kandidater</strong> (resten returnerede 404
+                Ud af de 950 scannede ID'er fandt jeg <strong>714 aktive kandidater</strong> (resten returnerede 404
                 eller manglede svar). Alle 714 kandidater har en komplet besvarelse af alle 25 spørgsmål, 
-                hvilket er afgørende for vores simulation.
+                hvilket er afgørende for min simulation.
             </p>
             <p>
                 Dataudtrækningen anvender 10 parallelle browser-tabs for at holde den totale kørselstid nede,
@@ -197,8 +197,8 @@ def _render_phase_2():
 
             <h4>2.1 Dataanalyse og mønstergenkendelse</h4>
             <p>
-                Ved at analysere de over 10.000 scrapede testkørsler identificerede vi en <strong>konsekvent,
-                lineær sammenhæng</strong> mellem svar-afstande og match-procenter. Specifikt opdagede vi:
+                Ved at analysere de over 10.000 scrapede testkørsler identificerede jeg en <strong>konsekvent,
+                lineær sammenhæng</strong> mellem svar-afstande og match-procenter. Specifikt opdagede jeg:
             </p>
             <ul>
                 <li><strong>Fuldstændig symmetri:</strong> At svare "Enig" giver præcis same match-afstand
@@ -228,12 +228,12 @@ def _render_phase_2():
             </p>
 
             <h4>2.3 Implikationer af den lineære model</h4>
-            <p>Den lineære model har én vigtig konsekvens, som vi kalder <strong>"midterfordelen"</strong>:</p>
+            <p>Den lineære model har én vigtig konsekvens, som jeg kalder <strong>"midterfordelen"</strong>:</p>
             <ul>
                 <li>En bruger, der svarer "Lidt enig" eller "Lidt uenig" (dvs. 1 eller 2 på skalaen),
                 har en kortere <em>gennemsnitlig</em> afstand til samtlige mulige kandidatsvar end en bruger, der
                 svarer "Enig" eller "Uenig" (0 eller 3).</li>
-                <li>Konkret viser vores data, at midtersvar i gennemsnit giver en match-% på <strong>ca. 68,1%</strong>
+                <li>Konkret viser min data, at midtersvar i gennemsnit giver en match-% på <strong>ca. 68,1%</strong>
                 mod <strong>ca. 67,5%</strong> for ydersvar — en forskel på omtrent 0,6 procentpoint.</li>
                 <li>Dette er en inherent egenskab ved enhver lineær afstandsmodel og udgør <em>ikke</em> i sig
                 selv en bias. Det er dog værd at være opmærksom på, at kandidater med "moderate" svar
@@ -242,10 +242,10 @@ def _render_phase_2():
 
             <h4>2.4 Verifikation</h4>
             <p>
-                Vi verificerede formlen ved at genberegne match-procenter offline for samtlige 10.000+
-                scrapede kørsler. I <strong>alle tilfælde</strong> reproducerede vi DR's viste match-procent
+                Jeg verificerede formlen ved at genberegne match-procenter offline for samtlige 10.000+
+                scrapede kørsler. I <strong>alle tilfælde</strong> reproducerede jeg DR's viste match-procent
                 med en afvigelse på maks. ±1 procentpoint (skyldes afrunding). Dette bekræfter, at formlen
-                er korrekt, og at vi trygt kan simulere testen offline.
+                er korrekt, og at jeg trygt kan simulere testen offline.
             </p>
         </div>
     </div>
@@ -268,7 +268,7 @@ def _render_phase_3():
             <p>
                 DR's Kandidattest har 25 spørgsmål med 4 svarmuligheder hver. Det totale svarrum
                 har altså 4<sup>25</sup> ≈ 1,1 × 10<sup>15</sup> (1,1 billiard) mulige kombinationer.
-                Det er umuligt at teste dem alle. Vi er derfor nødt til at <em>sample</em> fra dette rum,
+                Det er umuligt at teste dem alle. Jeg er derfor nødt til at <em>sample</em> fra dette rum,
                 og her er valget af sampling-metode afgørende.
             </p>
             <p>
@@ -286,7 +286,7 @@ def _render_phase_3():
 
             <h4>3.2 Implementering</h4>
             <p>
-                Vi bruger <code>scipy.stats.qmc.LatinHypercube</code> med d=25 dimensioner til at generere
+                Jeg bruger <code>scipy.stats.qmc.LatinHypercube</code> med d=25 dimensioner til at generere
                 100.000 svar-kombinationer pr. kørsel. Processen er som følger:
             </p>
             <ol>
@@ -310,7 +310,7 @@ def _render_phase_3():
             <h4>3.4 Vektoriseret beregning</h4>
             <p>
                 For effektivitetens skyld beregnes match-procenterne vektoriseret med <strong>NumPy</strong>.
-                I stedet for at iterere over individuelle kørsler og kandidater broadcaster vi
+                I stedet for at iterere over individuelle kørsler og kandidater broadcaster jeg
                 bruger-svarmatricen (N × 25) mod kandidat-svarmatricen (M × 25) i hukommelses-effektive
                 "chunks" af 5.000 kørsler ad gangen, hvilket holder RAM-forbruget nede under 500 MB
                 selv for storkredse med 100+ kandidater.
@@ -334,7 +334,7 @@ def _render_phase_4():
 
             <h4>4.1 Chi-i-anden (χ²) bias-index</h4>
             <p>
-                Vores primære mål for algoritmisk skævvridning er et <strong>normaliseret chi-i-anden
+                Mit primære mål for algoritmisk skævvridning er et <strong>normaliseret chi-i-anden
                 (χ²) bias-index</strong>. Det beregnes således:
             </p>
         </div>
@@ -367,7 +367,7 @@ def _render_phase_4():
 
             <h4>4.2 Spørgsmåls-effektstørrelse (effect size)</h4>
             <p>
-                For hvert af de 25 spørgsmål beregner vi, hvor meget brugerens svar på netop dét spørgsmål
+                For hvert af de 25 spørgsmål beregner jeg, hvor meget brugerens svar på netop dét spørgsmål
                 påvirker den endelige match-procent. Metoden er som følger:
             </p>
             <ol>
@@ -382,7 +382,7 @@ def _render_phase_4():
 
             <h4>4.3 Rød/blå blok-analyse</h4>
             <p>
-                Vi klassificerer partierne i to politiske blokke:
+                Jeg klassificerer partierne i to politiske blokke:
             </p>
             <ul>
                 <li><strong style="color: #ef4444;">Rød blok:</strong> A, F, Ø, B, Å</li>
@@ -392,14 +392,14 @@ def _render_phase_4():
 
             <h4>4.4 Parti-par-korrelation</h4>
             <p>
-                Vi analyserer, hvilke partier der oftest optræder som nummer 1 og nummer 2 i
+                Jeg analyserer, hvilke partier der oftest optræder som nummer 1 og nummer 2 i
                 den samme testkørsel. Denne analyse afslører algoritmisk "nærhed" mellem partier og
                 vises som en heatmap i dashboardet.
             </p>
 
             <h4>4.5 Kandidat-gaming-analyse</h4>
             <p>
-                Vi undersøger, om individuelle kandidater er over-repræsenterede eller har
+                Jeg undersøger, om individuelle kandidater er over-repræsenterede eller har
                 besvaret testen strategisk ("gaming") ved at vælge svar, der minimerer den
                 gennemsnitlige afstand til alle mulige brugersvar.
             </p>
@@ -415,29 +415,29 @@ def _render_phase_5():
         <div class="info-card-text">
             <h4>Formål</h4>
             <p>
-                At sikre, at vores datasæt er komplet, korrekt og repræsentativt, så analysens
+                At sikre, at mit datasæt er komplet, korrekt og repræsentativt, så analysens
                 konklusioner er troværdige.
             </p>
 
             <h4>5.1 Kandidat-komplethed</h4>
             <p>
-                Vi har manuelt verificeret vores datasæt mod DR's live platform. Af de 950
-                scannede kandidat-ID'er fandt vi <strong>714 aktive kandidater</strong> med fuldstændige
-                besvarelser. Specifikt identificerede vi, at mindst én kandidat (Jens Kier, ID 121) 
+                Jeg har manuelt verificeret mit datasæt mod DR's live platform. Af de 950
+                scannede kandidat-ID'er fandt jeg <strong>714 aktive kandidater</strong> med fuldstændige
+                besvarelser. Specifikt identificerede jeg, at mindst én kandidat (Jens Kier, ID 121) 
                 blev fjernet fra platformen undervejs.
             </p>
 
             <h4>5.2 Svar-korrekthed</h4>
             <p>
-                Vi har stikprøve-verificeret kandidaternes scrapede svar mod deres profiler. 
-                Vores "progressive scroll extraction"-teknik matcher korrekt kandidat-svar 
+                Jeg har stikprøve-verificeret kandidaternes scrapede svar mod deres profiler. 
+                Min "progressive scroll extraction"-teknik matcher korrekt kandidat-svar 
                 med spørgsmål ved at bruge DOM-positionen af markøren.
             </p>
 
             <h4>5.3 Algoritme-verifikation</h4>
             <p>
-                Vi har verificeret DR's algoritme ved at genberegne match-procenter offline for
-                over 10.000 scrapede resultater. Vores model reproducerer DR's match-procent i 
+                Jeg har verificeret DR's algoritme ved at genberegne match-procenter offline for
+                over 10.000 scrapede resultater. Min model reproducerer DR's match-procent i 
                 alle tilfælde (±1 pp afrunding).
             </p>
 
@@ -464,7 +464,7 @@ def _render_phase_6():
 
             <h4>6.1 Pre-aggregerings-pipeline</h4>
             <p>
-                Den rå simulationsdata fylder ca. 1 GB. For at sikre hurtig indlæsning kører vi 
+                Den rå simulationsdata fylder ca. 1 GB. For at sikre hurtig indlæsning kører jeg 
                 et pre-aggregerings-script, der gemmer alle nødvendige statistikker som små 
                 JSON-filer i <code>data/precomputed/</code>.
             </p>
