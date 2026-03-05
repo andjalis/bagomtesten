@@ -172,7 +172,7 @@ def load_candidates_data() -> pd.DataFrame:
 @st.cache_data(show_spinner=False, ttl=3600)
 def load_questions() -> dict:
     """Load question ID to Text mapping from precomputed JSON."""
-    path = PRECOMPUTED / "questions.json"
+    path = PRECOMPUTED_DIR / "questions.json"
     if path.exists():
         with open(path, encoding="utf-8") as f:
             raw = json.load(f)
