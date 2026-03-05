@@ -81,14 +81,14 @@ else:
         "Borgernes Parti": "Q",
     }
 
-    # Build party logo badges HTML — clickable links to Partier tab
+    # Build party logo badges HTML — clickable WITHOUT page refresh via JS & hidden Streamlit buttons
     party_badges_html = ""
     for party_name, letter in PARTY_LETTERS.items():
         color = PARTY_COLORS.get(party_name, "#374151")
         party_badges_html += (
-            f'<a href="?parti={party_name}" class="party-badge" '
-            f'style="background-color: {color}; text-decoration: none; color: white;" '
-            f'title="Se analyse af {party_name}">{letter}</a>'
+            f'<span class="party-badge" onclick="clickStreamlitBadge(\'{party_name}\')" '
+            f'style="background-color: {color}; cursor: pointer; color: white;" '
+            f'title="Se analyse af {party_name}">{letter}</span>'
         )
 
     st.markdown(f"""
@@ -104,11 +104,44 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Auto-switch to Partier tab when ?parti= is set ──
-    if st.query_params.get("parti"):
-        import streamlit.components.v1 as components
-        components.html("""
-        <script>
+    # ── Hidden Streamlit integration ──
+    # Generate hidden buttons that the JS will click. This forces a fast, in-place Streamlit 
+    # rerun without a full browser refresh, maintaining a seamless SPA experience.
+    for party_name in PARTY_LETTERS.keys():
+        if st.button(f"Hidden_{party_name}", key=f"btn_nav_{party_name}"):
+            st.query_params["parti"] = party_name
+
+    # ── JS logic: Badge click handler, Hide Streamlit buttons, Auto-switch to Partier tab ──
+    import streamlit.components.v1 as components
+    components.html("""
+    <script>
+    // 1. Hide the ugly Streamlit buttons we just created for the routing
+    const allBtns = window.parent.document.querySelectorAll('.stButton p');
+    for (const p of allBtns) {
+        if (p.innerText.startsWith('Hidden_')) {
+            const container = p.closest('.stElementContainer');
+            if (container) {
+                container.style.display = 'none';
+                container.style.margin = '0';
+                container.style.padding = '0';
+            }
+        }
+    }
+
+    // 2. Define the exact function triggered by the HTML badges
+    window.parent.clickStreamlitBadge = function(partyName) {
+        const btns = window.parent.document.querySelectorAll('.stButton p');
+        for (const p of btns) {
+            if (p.innerText === "Hidden_" + partyName) {
+                p.closest('button').click();
+                break;
+            }
+        }
+    };
+
+    // 3. Tab-switching logic if URL param is present
+    const urlParams = new URLSearchParams(window.parent.location.search);
+    if (urlParams.has('parti')) {
         function clickPartierTab() {
             const tabs = window.parent.document.querySelectorAll('[role="tab"]');
             for (const tab of tabs) {
@@ -131,8 +164,9 @@ else:
                 attempts++;
             }, 100);
         }
-        </script>
-        """, height=0, width=0)
+    }
+    </script>
+    """, height=0, width=0)
 
     # ── Render Sections (Tabs) ────────────────────────────────────────────────
     tab_overordnet, tab_partier, tab_valgkreds, tab_method = st.tabs(
