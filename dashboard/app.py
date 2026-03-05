@@ -90,9 +90,9 @@ else:
     st.markdown(f"""
     <div class="main-header">
         <div class="header-logos">
-            <img src="https://www.dr.dk/assets/img/dr-logo-red.svg" alt="DR" class="header-logo" onerror="this.style.display='none'" />
+            <span style="font-weight:900; font-size:1.6rem; color:#e4002b; letter-spacing:-1px; font-family:'Helvetica Neue',Arial,sans-serif;">DR</span>
             <span class="header-logo-divider">×</span>
-            <img src="https://altinget.dk/images/logo/altinget-logo.svg" alt="Altinget" class="header-logo" onerror="this.style.display='none'" />
+            <span style="font-weight:700; font-size:1.3rem; color:#94a3b8; letter-spacing:0.5px; font-family:'Helvetica Neue',Arial,sans-serif;">ALTINGET</span>
         </div>
         <h1>Kandidattest: Bias & algoritme</h1>
         <p>LHS-simulering af {n_storkredse} storkredse • {n_candidates} kandidater med svar • FV26</p>

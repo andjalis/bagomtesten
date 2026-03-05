@@ -55,8 +55,16 @@ def _render_candidate_cards(top_candidates: pd.DataFrame, key_prefix: str = "gam
     c_df = load_candidates_data()
     q_dict = load_questions()
 
+    PARTY_LETTERS = {
+        "Socialdemokratiet": "A", "Radikale Venstre": "B", "Konservative": "C",
+        "Socialistisk Folkeparti": "F", "Liberal Alliance": "I", "Moderaterne": "M",
+        "Dansk Folkeparti": "O", "Venstre": "V", "Danmarksdemokraterne": "Æ",
+        "Enhedslisten": "Ø", "Alternativet": "Å", "Borgernes Parti": "Q",
+    }
+
     for _, row in display_candidates.iterrows():
         p_color = PARTY_COLORS.get(row["party"], "#374151")
+        p_letter = PARTY_LETTERS.get(row["party"], "?")
         img_src = (
             row["candidate_image"]
             if pd.notna(row["candidate_image"]) and row["candidate_image"]
@@ -77,7 +85,10 @@ def _render_candidate_cards(top_candidates: pd.DataFrame, key_prefix: str = "gam
             <img src="{img_src}" class="cand-img" />
             <div class="cand-info">
                 <p class="cand-name">{row["candidate_name"]}</p>
-                <p class="cand-party">{row["party"]} • {row["municipality"]}</p>
+                <p class="cand-party">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:1.2em;height:1.2em;border-radius:50%;background:{p_color};color:#fff;font-weight:700;font-size:0.7em;margin-right:4px;flex-shrink:0;">{p_letter}</span>
+                    {row["party"]} • {row["municipality"]}
+                </p>
             </div>
             <div class="cand-count">
                 <span class="cand-label" style="color: {p_color};">{main_label}</span>
