@@ -542,5 +542,177 @@ DASHBOARD_CSS = """
         box-shadow: var(--shadow-md);
     }
 
+    /* ═══════════════════════════════════════════════════════
+       ── Mobile & Tablet Responsive ──
+       ═══════════════════════════════════════════════════════ */
+
+    /* ── Tablet (≤900px) ── */
+    @media (max-width: 900px) {
+        .main-header h1 {
+            font-size: 2.2rem !important;
+        }
+        .kpi-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+        .kpi-value {
+            font-size: 1.8rem;
+        }
+    }
+
+    /* ── Mobile (≤640px) ── */
+    @media (max-width: 640px) {
+
+        /* Header */
+        .main-header {
+            padding: 24px 8px 16px 8px;
+        }
+        .main-header h1 {
+            font-size: 1.5rem !important;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        .main-header p {
+            font-size: 0.85rem !important;
+            line-height: 1.5;
+        }
+
+        /* Tabs — allow wrapping on small screens */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 4px;
+            padding: 4px;
+            border-radius: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .stTabs [data-baseweb="tab"] {
+            font-size: 0.8rem;
+            padding: 7px 12px;
+        }
+
+        /* KPI Cards — 2-column grid on phones */
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .kpi-card {
+            padding: 14px;
+        }
+        .kpi-value {
+            font-size: 1.5rem;
+        }
+        .kpi-value.kpi-party {
+            font-size: 1.1rem;
+        }
+        .kpi-label {
+            font-size: 0.78rem;
+        }
+        .kpi-sub {
+            font-size: 0.75rem;
+        }
+
+        /* Metrics */
+        [data-testid="stMetric"] {
+            padding: 12px;
+        }
+        [data-testid="stMetricValue"] {
+            font-size: 1.4rem !important;
+        }
+
+        /* Candidate cards — stack on mobile */
+        .cand-card {
+            flex-wrap: wrap;
+            padding: 14px;
+            gap: 12px;
+        }
+        .cand-img {
+            width: 44px;
+            height: 44px;
+        }
+        .cand-name {
+            font-size: 0.95rem;
+        }
+        .cand-party {
+            font-size: 0.8rem;
+        }
+        .cand-count {
+            min-width: 70px;
+        }
+        .cand-count strong {
+            font-size: 1.4rem;
+        }
+
+        /* Info cards — remove fixed height, tighter padding */
+        .info-card {
+            padding: 18px;
+            height: auto;
+        }
+        .info-card-title {
+            font-size: 1.1rem;
+        }
+        .info-card-text {
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+
+        /* Insight chips — full width */
+        .insight-row {
+            flex-direction: column;
+            gap: 8px;
+        }
+        .insight-chip {
+            font-size: 0.82rem;
+            padding: 8px 12px;
+        }
+
+        /* Method section */
+        .method-step h4 {
+            font-size: 1rem !important;
+        }
+        .method-step p,
+        .method-step li {
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+
+        /* Persona cards */
+        .persona-card {
+            padding: 16px;
+        }
+        .persona-name {
+            font-size: 1.3rem;
+        }
+
+        /* Global h2/h3 sizing */
+        h2 { font-size: 1.3rem !important; }
+        h3 { font-size: 1.1rem !important; }
+        h4 { font-size: 1rem !important; }
+
+        /* Reduce Streamlit default padding on mobile */
+        .block-container {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            padding-top: 1rem !important;
+        }
+
+        /* Make plotly charts not overflow horizontally */
+        .stPlotlyChart {
+            overflow-x: auto !important;
+        }
+
+        /* Expanders */
+        [data-testid="stExpander"] summary {
+            font-size: 0.9rem;
+        }
+
+        /* Dataframes — horizontal scroll */
+        [data-testid="stDataFrame"] {
+            overflow-x: auto;
+        }
+    }
+
 </style>
 """
+
