@@ -64,6 +64,7 @@ else:
     # ── Logos & Header ────────────────────────────────────────────────────────
     n_storkredse = kpis.get("storkredse", 0)
     n_candidates = kpis.get("total_candidates", 0)
+    n_simulations = f"{kpis.get('total_simulations', 0):,}".replace(",", ".")
 
     # Party letter mapping for logo badges
     PARTY_LETTERS = {
@@ -81,26 +82,10 @@ else:
         "Borgernes Parti": "Q",
     }
 
-    # Build party logo badges HTML — clickable WITHOUT page refresh via JS & hidden Streamlit buttons
-    party_badges_html = ""
-    for party_name, letter in PARTY_LETTERS.items():
-        color = PARTY_COLORS.get(party_name, "#374151")
-        party_badges_html += (
-            f'<span class="party-badge" data-party="{party_name}" '
-            f'style="background-color: {color}; cursor: pointer; color: white;" '
-            f'title="Se analyse af {party_name}">{letter}</span>'
-        )
-
     st.markdown(f"""
     <div class="main-header">
-        <div class="header-logos">
-            <span style="font-weight:900; font-size:1.6rem; color:#e4002b; letter-spacing:-1px; font-family:'Helvetica Neue',Arial,sans-serif;">DR</span>
-            <span class="header-logo-divider">×</span>
-            <span style="font-weight:700; font-size:1.3rem; color:#94a3b8; letter-spacing:0.5px; font-family:'Helvetica Neue',Arial,sans-serif;">ALTINGET</span>
-        </div>
-        <h1>Kandidattest: Bias & algoritme</h1>
-        <p>LHS-simulering af {n_storkredse} storkredse • {n_candidates} kandidater med svar • FV26</p>
-        <div class="party-badge-row">{party_badges_html}</div>
+        <h1>Bag om testen - opdag mønstre og bias i DRs kandidattest</h1>
+        <p>Baseret på {n_simulations} kørsler med tilfældige besvarelser i {n_storkredse} valgkredse med {n_candidates} kandidater</p>
     </div>
     """, unsafe_allow_html=True)
 

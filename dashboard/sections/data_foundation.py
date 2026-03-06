@@ -17,7 +17,7 @@ def render_data_foundation():
 
     kpis = load_global_kpis()
     if kpis:
-        st.caption(f"LHS-simulering baseret på **{kpis.get('total_simulations', 0):,}** fuldførte test-kørsler.".replace(",", "."))
+        st.caption(f"Baseret på **{kpis.get('total_simulations', 0):,}** kørsler med tilfældige besvarelser i {kpis.get('storkredse', 28)} valgkredse med {kpis.get('total_candidates', 714)} kandidater.".replace(",", "."))
 
     # ── TL;DR: Two summary cards at top ──────────────────────────────────────
     col1, col2 = st.columns(2, gap="large")
